@@ -1,11 +1,17 @@
 import { FC, ReactNode, useMemo } from 'react';
 import { ConnectionProvider, WalletProvider as SolanaWalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import { clusterApiUrl } from '@solana/web3.js';
 
 export const WalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  // Use our proxy endpoint for client-side operations
+  // Use a conditional endpoint based on whether we're in the browser or server
   const endpoint = useMemo(() => {
-    return "/api/rpc-proxy"; // This will route through our server
+    // During server-side rendering, use a public endpoint
+    if (typeof window === 'undefined') {
+      return clusterApiUrl('mainnet-beta');
+    }
+    // In the browser, use our proxy endpoint
+    return "/api/rpc-proxy";
   }, []);
 
   // All popular wallets now support the Wallet Standard
