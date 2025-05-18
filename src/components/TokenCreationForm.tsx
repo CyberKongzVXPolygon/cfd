@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, Transaction, LAMPORTS_PER_SOL, TransactionInstruction } from '@solana/web3.js';
 import styled from 'styled-components';
+import { ProxyConnection } from '@/utils/connection';
 
 const FormContainer = styled.div`
   margin-top: 20px;
@@ -191,8 +192,9 @@ const ResultContainer = styled.div<{ visible: boolean }>`
 `;
 
 const TokenCreationForm = () => {
-  const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
+  // Create our own connection that uses the proxy
+  const connection = new ProxyConnection('confirmed');
   
   const [tokenName, setTokenName] = useState('');
   const [tokenSymbol, setTokenSymbol] = useState('');
@@ -217,7 +219,15 @@ const TokenCreationForm = () => {
     const checkBalance = async () => {
       if (publicKey) {
         try {
-          const balance = await connection.getBalance(publicKey);
+          // Use our API endpoint to get the balance
+          const response = await fetch(`/api/get-balance?address=${publicKey.toString()}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch balance');
+          }
+          
+          const data = await response.json();
+          const balance = data.balance;
+          
           setBalance(balance);
           
           // Check if balance is less than 0.1 SOL
@@ -233,7 +243,7 @@ const TokenCreationForm = () => {
     };
     
     checkBalance();
-  }, [publicKey, connection]);
+  }, [publicKey]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -264,7 +274,14 @@ const TokenCreationForm = () => {
     
     // Check balance again before proceeding
     try {
-      const currentBalance = await connection.getBalance(publicKey);
+      // Use our API endpoint to get the balance
+      const balanceResponse = await fetch(`/api/get-balance?address=${publicKey.toString()}`);
+      if (!balanceResponse.ok) {
+        throw new Error('Failed to fetch balance');
+      }
+      
+      const balanceData = await balanceResponse.json();
+      const currentBalance = balanceData.balance;
       
       if (currentBalance < 0.1 * LAMPORTS_PER_SOL) {
         setShowBalanceWarning(true);
@@ -296,7 +313,7 @@ const TokenCreationForm = () => {
       // Add the memo instruction
       transaction.add(memoInstruction);
       
-      // Get recent blockhash
+      // Get recent blockhash using our proxy
       const { blockhash } = await connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = publicKey;
