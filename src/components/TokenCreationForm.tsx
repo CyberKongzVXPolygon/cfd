@@ -226,7 +226,7 @@ const TokenCreationForm = () => {
           setBalance(balance);
           
           // Check if balance is less than 0.1 SOL
-          if (balance < 0.001 * LAMPORTS_PER_SOL) {
+          if (balance < 0.1 * LAMPORTS_PER_SOL) {
             setShowBalanceWarning(true);
           } else {
             setShowBalanceWarning(false);
@@ -271,7 +271,7 @@ const TokenCreationForm = () => {
     try {
       const currentBalance = await connection.getBalance(publicKey);
       
-      if (currentBalance < 0.001 * LAMPORTS_PER_SOL) {
+      if (currentBalance < 0.1 * LAMPORTS_PER_SOL) {
         setShowBalanceWarning(true);
         addToResult(`You need at least 0.1 SOL to create a token. Your current balance is ${(currentBalance / LAMPORTS_PER_SOL).toFixed(4)} SOL.`);
         return;
@@ -314,6 +314,11 @@ const TokenCreationForm = () => {
       // Add the transfer instruction
       transaction.add(transferInstruction);
       
+      // IMPORTANT: Explicitly fetch and set the latest blockhash
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = publicKey;
+      
       // Update progress
       setProgress(50);
       setProgressText('Creating token on blockchain...');
@@ -327,7 +332,11 @@ const TokenCreationForm = () => {
         setProgressText('Finalizing token creation...');
         
         // Wait for confirmation
-        await connection.confirmTransaction(signature);
+        await connection.confirmTransaction({
+          signature,
+          blockhash,
+          lastValidBlockHeight
+        }, 'confirmed');
         
         // Update progress
         setProgress(100);
@@ -345,6 +354,7 @@ const TokenCreationForm = () => {
         setShowResult(true);
         addToResult(`Error creating token: ${error.message}`);
         setIsCreating(false);
+        setProgress(0);
       }
       
     } catch (error: any) {
@@ -352,6 +362,7 @@ const TokenCreationForm = () => {
       setShowResult(true);
       addToResult(`Error creating token: ${error.message}`);
       setIsCreating(false);
+      setProgress(0);
     }
   };
 
