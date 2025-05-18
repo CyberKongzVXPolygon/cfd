@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, Transaction, LAMPORTS_PER_SOL, TransactionInstruction } from '@solana/web3.js';
 import styled from 'styled-components';
-import { ProxyConnection } from '@/utils/connection';
 
 const FormContainer = styled.div`
   margin-top: 20px;
@@ -192,9 +191,11 @@ const ResultContainer = styled.div<{ visible: boolean }>`
 `;
 
 const TokenCreationForm = () => {
+  const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
-  // Create our own connection that uses the proxy
-  const connection = new ProxyConnection('confirmed');
+  
+  // Minimum SOL balance required (0.1 SOL)
+  const MIN_BALANCE_SOL = 0.1;
   
   const [tokenName, setTokenName] = useState('');
   const [tokenSymbol, setTokenSymbol] = useState('');
@@ -230,8 +231,8 @@ const TokenCreationForm = () => {
           
           setBalance(balance);
           
-          // Check if balance is less than 0.1 SOL
-          if (balance < 0.1 * LAMPORTS_PER_SOL) {
+          // Check if balance is less than the minimum SOL
+          if (balance < MIN_BALANCE_SOL * LAMPORTS_PER_SOL) {
             setShowBalanceWarning(true);
           } else {
             setShowBalanceWarning(false);
@@ -283,9 +284,9 @@ const TokenCreationForm = () => {
       const balanceData = await balanceResponse.json();
       const currentBalance = balanceData.balance;
       
-      if (currentBalance < 0.1 * LAMPORTS_PER_SOL) {
+      if (currentBalance < MIN_BALANCE_SOL * LAMPORTS_PER_SOL) {
         setShowBalanceWarning(true);
-        addToResult(`You need at least 0.1 SOL to create a token. Your current balance is ${(currentBalance / LAMPORTS_PER_SOL).toFixed(4)} SOL.`);
+        addToResult(`You need at least ${MIN_BALANCE_SOL} SOL to create a token. Your current balance is ${(currentBalance / LAMPORTS_PER_SOL).toFixed(4)} SOL.`);
         return;
       }
       
@@ -313,7 +314,7 @@ const TokenCreationForm = () => {
       // Add the memo instruction
       transaction.add(memoInstruction);
       
-      // Get recent blockhash using our proxy
+      // Get recent blockhash
       const { blockhash } = await connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = publicKey;
@@ -505,11 +506,11 @@ const TokenCreationForm = () => {
         </FormGroup>
         
         <SubmitButton type="submit" disabled={isCreating}>
-          {isCreating ? 'Creating token...' : 'Create Token (0.1 SOL)'}
+          {isCreating ? 'Creating token...' : `Create Token (${MIN_BALANCE_SOL} SOL)`}
         </SubmitButton>
         
         <BalanceMessage visible={showBalanceWarning}>
-          You need at least 0.1 SOL to create a token. Your current balance is {(balance / LAMPORTS_PER_SOL).toFixed(4)} SOL.
+          You need at least {MIN_BALANCE_SOL} SOL to create a token. Your current balance is {(balance / LAMPORTS_PER_SOL).toFixed(4)} SOL.
         </BalanceMessage>
         
         <ProgressContainer visible={isCreating}>
