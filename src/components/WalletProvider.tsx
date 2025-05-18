@@ -10,8 +10,10 @@ export const WalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
     if (typeof window === 'undefined') {
       return clusterApiUrl('mainnet-beta');
     }
-    // In the browser, use our proxy endpoint
-    return "/api/rpc-proxy";
+    
+    // In the browser, use absolute URL to our proxy endpoint
+    const origin = window.location.origin; // Gets the base URL like https://coinfastfun.vercel.app
+    return `${origin}/api/rpc-proxy`;
   }, []);
 
   // All popular wallets now support the Wallet Standard
