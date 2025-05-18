@@ -4,10 +4,9 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
 
 export const WalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  // Always use a full URL for the endpoint
+  // Use a standard public endpoint for the wallet connection
   const endpoint = useMemo(() => {
-    // Use a public Solana RPC endpoint
-    return "https://solana-mainnet.rpc.extrnode.com";
+    return "https://api.mainnet-beta.solana.com";
   }, []);
 
   // All popular wallets now support the Wallet Standard
