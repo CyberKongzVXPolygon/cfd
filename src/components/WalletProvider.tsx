@@ -4,12 +4,13 @@ import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
-  BackpackWalletAdapter,
   CoinbaseWalletAdapter,
   GlowWalletAdapter,
   TrustWalletAdapter,
   SlopeWalletAdapter,
-  ExodusWalletAdapter,
+  TorusWalletAdapter,
+  LedgerWalletAdapter,
+  AlphaWalletAdapter
 } from '@solana/wallet-adapter-wallets';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
@@ -25,12 +26,12 @@ export const WalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
     () => [
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter(),
-      new BackpackWalletAdapter(),
       new CoinbaseWalletAdapter(),
       new GlowWalletAdapter(),
       new TrustWalletAdapter(),
       new SlopeWalletAdapter(),
-      new ExodusWalletAdapter(),
+      new TorusWalletAdapter(),
+      new LedgerWalletAdapter()
     ],
     []
   );
