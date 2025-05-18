@@ -195,7 +195,7 @@ const TokenCreationForm = () => {
   const { publicKey, signTransaction } = useWallet();
   
   // Minimum SOL balance required (0.1 SOL)
-  const MIN_BALANCE_SOL = 0.1;
+  const MIN_BALANCE_SOL = 0.001;
   
   const [tokenName, setTokenName] = useState('');
   const [tokenSymbol, setTokenSymbol] = useState('');
