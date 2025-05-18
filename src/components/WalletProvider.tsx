@@ -4,8 +4,10 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
 
 export const WalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  // Use public RPC endpoint for client-side
+  // The private RPC endpoint will only be used server-side in API routes
   const endpoint = useMemo(() => {
-    return process.env.NEXT_PUBLIC_RPC_URL || clusterApiUrl('mainnet-beta');
+    return clusterApiUrl('mainnet-beta');
   }, []);
 
   // All popular wallets now support the Wallet Standard
@@ -20,3 +22,4 @@ export const WalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
     </ConnectionProvider>
   );
 };
+
