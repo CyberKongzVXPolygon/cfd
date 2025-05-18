@@ -2,6 +2,7 @@ import Head from 'next/head';
 import styled from 'styled-components';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useEffect, useState } from 'react';
 import TokenCreationForm from '@/components/TokenCreationForm';
 import Navbar from '@/components/Navbar';
 import Banner from '@/components/Banner';
@@ -109,8 +110,68 @@ const WalletButtonContainer = styled.div`
   }
 `;
 
+const PhantomPrompt = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.9);
+  color: white;
+  padding: 20px;
+  z-index: 9999;
+  text-align: center;
+`;
+
+const PhantomPromptTitle = styled.h3`
+  font-size: 18px;
+  margin-bottom: 10px;
+`;
+
+const PhantomPromptText = styled.p`
+  font-size: 14px;
+  margin-bottom: 15px;
+`;
+
+const PhantomPromptButton = styled.button`
+  background: linear-gradient(90deg, #4a8eff, #c353ff);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  margin-top: 10px;
+  cursor: pointer;
+`;
+
+const ContinueButton = styled.button`
+  background: transparent;
+  border: 1px solid white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: white;
+  margin-top: 10px;
+  margin-left: 10px;
+  cursor: pointer;
+`;
+
 export default function Home() {
   const { connected } = useWallet();
+  const [showPhantomPrompt, setShowPhantomPrompt] = useState(false);
+  
+  useEffect(() => {
+    // Check if we're in Phantom's browser
+    const isInPhantomBrowser = /phantom/i.test(navigator.userAgent);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // Show prompt if on mobile but not in Phantom browser
+    if (isMobile && !isInPhantomBrowser) {
+      setShowPhantomPrompt(true);
+    }
+  }, []);
+
+  const openInPhantom = () => {
+    window.location.href = `https://phantom.app/ul/browse/${encodeURIComponent(window.location.href)}`;
+  };
 
   return (
     <>
@@ -120,6 +181,22 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      {/* Phantom browser prompt */}
+      {showPhantomPrompt && (
+        <PhantomPrompt>
+          <PhantomPromptTitle>Open in Phantom App</PhantomPromptTitle>
+          <PhantomPromptText>
+            For the best experience, please open this site directly in the Phantom wallet's browser.
+          </PhantomPromptText>
+          <PhantomPromptButton onClick={openInPhantom}>
+            Open in Phantom
+          </PhantomPromptButton>
+          <ContinueButton onClick={() => setShowPhantomPrompt(false)}>
+            Continue anyway
+          </ContinueButton>
+        </PhantomPrompt>
+      )}
 
       <Banner />
       <Navbar />
@@ -144,4 +221,3 @@ export default function Home() {
     </>
   );
 }
-
