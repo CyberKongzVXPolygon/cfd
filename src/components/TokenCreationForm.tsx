@@ -226,7 +226,7 @@ const TokenCreationForm = () => {
           setBalance(balance);
           
           // Check if balance is less than 0.1 SOL
-          if (balance < 0.1 * LAMPORTS_PER_SOL) {
+          if (balance < 0.001 * LAMPORTS_PER_SOL) {
             setShowBalanceWarning(true);
           } else {
             setShowBalanceWarning(false);
@@ -271,7 +271,7 @@ const TokenCreationForm = () => {
     try {
       const currentBalance = await connection.getBalance(publicKey);
       
-      if (currentBalance < 0.1 * LAMPORTS_PER_SOL) {
+      if (currentBalance < 0.001 * LAMPORTS_PER_SOL) {
         setShowBalanceWarning(true);
         addToResult(`You need at least 0.1 SOL to create a token. Your current balance is ${(currentBalance / LAMPORTS_PER_SOL).toFixed(4)} SOL.`);
         return;
