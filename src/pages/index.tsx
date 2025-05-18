@@ -5,6 +5,9 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import TokenCreationForm from '@/components/TokenCreationForm';
 import Navbar from '@/components/Navbar';
 import Banner from '@/components/Banner';
+import StepsBox from '@/components/StepsBox';
+import FAQ from '@/components/FAQ';
+import Footer from '@/components/Footer';
 
 const MainContent = styled.div`
   text-align: center;
@@ -132,7 +135,13 @@ export default function Home() {
           
           {connected && <TokenCreationForm />}
         </ConnectBox>
+        
+        <StepsBox />
+        <FAQ />
       </MainContent>
+      
+      <Footer />
     </>
   );
 }
+
