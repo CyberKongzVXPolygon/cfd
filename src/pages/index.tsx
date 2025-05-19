@@ -170,14 +170,11 @@ export default function Home() {
   }, []);
 
   const openInPhantom = () => {
-    // Use the exact format that works on memefast.fun
-    const baseUrl = window.location.href;
+    // This is the most basic format that should work
+    const universalUrl = `https://phantom.app/ul/browse/${window.location.href}`;
     
-    // Remove any trailing slashes
-    const cleanUrl = baseUrl.replace(/\/$/, '');
-    
-    // Use the direct format without URL encoding
-    window.location.href = `https://phantom.app/ul/browse/${cleanUrl}`;
+    // Redirect directly without any conditional logic
+    window.location.href = universalUrl;
   };
 
   return (
