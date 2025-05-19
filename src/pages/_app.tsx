@@ -1,6 +1,6 @@
+import { ThirdwebProvider } from "@thirdweb-dev/react";
+import { Solana } from "@thirdweb-dev/chains";
 import type { AppProps } from 'next/app';
-import { SolanaWalletProvider } from '@/components/WalletProvider';
-import '@solana/wallet-adapter-react-ui/styles.css';
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
@@ -40,13 +40,18 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
-export default function App({ Component, pageProps }: AppProps) {
+function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <GlobalStyle />
-      <SolanaWalletProvider>
+      <ThirdwebProvider 
+        activeChain={Solana}
+        clientId={process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID}
+      >
         <Component {...pageProps} />
-      </SolanaWalletProvider>
+      </ThirdwebProvider>
     </>
   );
 }
+
+export default MyApp;

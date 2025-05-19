@@ -1,8 +1,6 @@
 import Head from 'next/head';
 import styled from 'styled-components';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { useEffect, useState } from 'react';
+import { ConnectWallet, useConnectionStatus } from "@thirdweb-dev/react";
 import TokenCreationForm from '@/components/TokenCreationForm';
 import Navbar from '@/components/Navbar';
 import Banner from '@/components/Banner';
@@ -88,141 +86,11 @@ const WalletButtonContainer = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
-
-  .wallet-adapter-button {
-    background-color: var(--accent-cyan);
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 184, 217, 0.3);
-
-    &:hover {
-      background-color: #00a0c0;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(0, 184, 217, 0.4);
-    }
-  }
-
-  .wallet-adapter-button-trigger {
-    background-color: var(--accent-cyan);
-  }
-
-  .wallet-adapter-button.wallet-adapter-button-trigger.wallet-connected {
-    background-color: var(--accent-green);
-  }
 `;
-
-const PhantomPrompt = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0,0,0,0.9);
-  color: white;
-  padding: 20px;
-  z-index: 9999;
-  text-align: center;
-`;
-
-const PhantomPromptTitle = styled.h3`
-  font-size: 18px;
-  margin-bottom: 10px;
-`;
-
-const PhantomPromptText = styled.p`
-  font-size: 14px;
-  margin-bottom: 15px;
-`;
-
-const PhantomPromptButton = styled.button`
-  background: linear-gradient(90deg, #4a8eff, #c353ff);
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  color: white;
-  font-weight: bold;
-  margin-top: 10px;
-  cursor: pointer;
-`;
-
-const ContinueButton = styled.button`
-  background: transparent;
-  border: 1px solid white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  color: white;
-  margin-top: 10px;
-  margin-left: 10px;
-  cursor: pointer;
-`;
-
-// Intercept wallet modal clicks on mobile
-const interceptWalletModalClicks = () => {
-  // Wait for the wallet modal to appear
-  setTimeout(() => {
-    const walletButtons = document.querySelectorAll('.wallet-adapter-modal-list .wallet-adapter-button');
-    
-    walletButtons.forEach(button => {
-      button.addEventListener('click', (e) => {
-        // Get the wallet name from the button
-        const walletName = button.textContent?.toLowerCase() || '';
-        
-        // Check if we're on mobile
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        if (isMobile) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          // Handle different wallets
-          if (walletName.includes('phantom')) {
-            window.location.href = `https://phantom.app/ul/browse/${window.location.href}`;
-          } else if (walletName.includes('solflare')) {
-            window.location.href = `https://solflare.com/ul/browse?url=${encodeURIComponent(window.location.href)}`;
-          }
-          
-          // Close the modal
-          const closeButton = document.querySelector('.wallet-adapter-modal-button-close');
-          if (closeButton) {
-            (closeButton as HTMLElement).click();
-          }
-        }
-      }, true);
-    });
-  }, 500);
-};
 
 export default function Home() {
-  const { connected } = useWallet();
-  const [showPhantomPrompt, setShowPhantomPrompt] = useState(false);
-  
-  useEffect(() => {
-    // Check if we're in a wallet's browser
-    const isInWalletBrowser = /phantom|solflare/i.test(navigator.userAgent);
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    // Show prompt if on mobile but not in a wallet browser
-    if (isMobile && !isInWalletBrowser) {
-      setShowPhantomPrompt(true);
-    }
-    
-    // Add click interceptor for wallet modal buttons
-    const walletButton = document.querySelector('.wallet-adapter-button-trigger');
-    if (walletButton) {
-      walletButton.addEventListener('click', interceptWalletModalClicks);
-    }
-    
-    return () => {
-      // Cleanup
-      const walletButton = document.querySelector('.wallet-adapter-button-trigger');
-      if (walletButton) {
-        walletButton.removeEventListener('click', interceptWalletModalClicks);
-      }
-    };
-  }, []);
-
-  const openInPhantom = () => {
-    // This is the format that works for Phantom
-    window.location.href = `https://phantom.app/ul/browse/${window.location.href}`;
-  };
+  const connectionStatus = useConnectionStatus();
+  const isConnected = connectionStatus === "connected";
 
   return (
     <>
@@ -233,22 +101,6 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* Phantom browser prompt for mobile */}
-      {showPhantomPrompt && (
-        <PhantomPrompt>
-          <PhantomPromptTitle>Open in Phantom App</PhantomPromptTitle>
-          <PhantomPromptText>
-            For the best experience, please open this site directly in the Phantom wallet's browser.
-          </PhantomPromptText>
-          <PhantomPromptButton onClick={openInPhantom}>
-            Open in Phantom
-          </PhantomPromptButton>
-          <ContinueButton onClick={() => setShowPhantomPrompt(false)}>
-            Continue anyway
-          </ContinueButton>
-        </PhantomPrompt>
-      )}
-
       <Banner />
       <Navbar />
       
@@ -258,10 +110,23 @@ export default function Home() {
         
         <ConnectBox>
           <WalletButtonContainer>
-            <WalletMultiButton />
+            <ConnectWallet 
+              theme="dark"
+              modalSize="wide"
+              modalTitle="Connect your wallet"
+              welcomeScreen={{
+                title: "Create Your Own Token",
+                subtitle: "Connect your wallet to get started",
+                img: {
+                  src: "https://coinfastfun.vercel.app/favicon.ico",
+                  width: 150,
+                  height: 150
+                }
+              }}
+            />
           </WalletButtonContainer>
           
-          {connected && <TokenCreationForm />}
+          {isConnected && <TokenCreationForm />}
         </ConnectBox>
         
         <StepsBox />
