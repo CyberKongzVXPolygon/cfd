@@ -170,19 +170,20 @@ export default function Home() {
   }, []);
 
   const openInPhantom = () => {
-    // Check if iOS
+    // The correct format to open a URL in Phantom's browser
+    const encodedUrl = encodeURIComponent(window.location.href);
+    const phantomBrowseUrl = `https://phantom.app/ul/browser?url=${encodedUrl}`;
+    
+    // For iOS, we need to use a different approach
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     
     if (isIOS) {
-      // Use custom protocol for iOS
-      const phantomProtocolUrl = `phantom://browse/${encodeURIComponent(window.location.href)}`;
+      // iOS needs the custom protocol with the correct format
+      window.location.href = `phantom://browser?url=${encodedUrl}`;
       
-      // Try to open the app with the custom protocol
-      window.location.href = phantomProtocolUrl;
-      
-      // Set a timeout to redirect to download page if app doesn't open
+      // Set a timeout to redirect to universal link if app doesn't open
       const timeout = setTimeout(() => {
-        window.location.href = 'https://phantom.app/download';
+        window.location.href = phantomBrowseUrl;
       }, 2000);
       
       // Clear the timeout if the page is hidden (app opened successfully)
@@ -192,8 +193,8 @@ export default function Home() {
         }
       });
     } else {
-      // Keep universal links for Android
-      window.location.href = `https://phantom.app/ul/browse/${encodeURIComponent(window.location.href)}`;
+      // For Android, use the universal link format
+      window.location.href = phantomBrowseUrl;
     }
   };
 
