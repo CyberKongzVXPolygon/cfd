@@ -27,7 +27,7 @@ export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) 
           icon: 'favicon.ico',
         },
         authorizationResultCache: createDefaultAuthorizationResultCache(),
-        cluster: WalletAdapterNetwork.MainnetBeta,
+        cluster: WalletAdapterNetwork.Mainnet,
         onWalletNotFound: createDefaultWalletNotFoundHandler(),
       })
     ],
