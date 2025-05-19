@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import styled from 'styled-components';
-import { ConnectWallet, useConnectionStatus } from "@thirdweb-dev/react";
+import { useWallet } from "@thirdweb-dev/react";
 import TokenCreationForm from '@/components/TokenCreationForm';
 import Navbar from '@/components/Navbar';
 import Banner from '@/components/Banner';
@@ -82,15 +82,9 @@ const ConnectBox = styled.div`
   }
 `;
 
-const WalletButtonContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-`;
-
 export default function Home() {
-  const connectionStatus = useConnectionStatus();
-  const isConnected = connectionStatus === "connected";
+  const { address } = useWallet();
+  const isConnected = !!address;
 
   return (
     <>
@@ -109,23 +103,6 @@ export default function Home() {
         <Subtitle>Launch your own token on Solana in seconds. No coding required.</Subtitle>
         
         <ConnectBox>
-          <WalletButtonContainer>
-            <ConnectWallet 
-              theme="dark"
-              modalSize="wide"
-              modalTitle="Connect your wallet"
-              welcomeScreen={{
-                title: "Create Your Own Token",
-                subtitle: "Connect your wallet to get started",
-                img: {
-                  src: "https://coinfastfun.vercel.app/favicon.ico",
-                  width: 150,
-                  height: 150
-                }
-              }}
-            />
-          </WalletButtonContainer>
-          
           {isConnected && <TokenCreationForm />}
         </ConnectBox>
         
