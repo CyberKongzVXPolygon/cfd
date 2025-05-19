@@ -170,16 +170,14 @@ export default function Home() {
   }, []);
 
   const openInPhantom = () => {
-    // URL encode the current URL
-    const encodedUrl = encodeURIComponent(window.location.href);
-    // URL encode the origin as the ref parameter
-    const encodedRef = encodeURIComponent(window.location.origin);
+    // Use the exact format that works on memefast.fun
+    const baseUrl = window.location.href;
     
-    // Construct the proper deeplink with both required parameters
-    const phantomDeepLink = `https://phantom.app/ul/browse?url=${encodedUrl}&ref=${encodedRef}`;
+    // Remove any trailing slashes
+    const cleanUrl = baseUrl.replace(/\/$/, '');
     
-    // Redirect to Phantom
-    window.location.href = phantomDeepLink;
+    // Use the direct format without URL encoding
+    window.location.href = `https://phantom.app/ul/browse/${cleanUrl}`;
   };
 
   return (
