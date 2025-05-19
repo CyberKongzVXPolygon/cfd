@@ -154,33 +154,74 @@ const ContinueButton = styled.button`
   cursor: pointer;
 `;
 
+// Intercept wallet modal clicks on mobile
+const interceptWalletModalClicks = () => {
+  // Wait for the wallet modal to appear
+  setTimeout(() => {
+    const walletButtons = document.querySelectorAll('.wallet-adapter-modal-list .wallet-adapter-button');
+    
+    walletButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        // Get the wallet name from the button
+        const walletName = button.textContent?.toLowerCase() || '';
+        
+        // Check if we're on mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Handle different wallets
+          if (walletName.includes('phantom')) {
+            window.location.href = `https://phantom.app/ul/browse/${window.location.href}`;
+          } else if (walletName.includes('solflare')) {
+            window.location.href = `https://solflare.com/ul/browse?url=${encodeURIComponent(window.location.href)}`;
+          }
+          
+          // Close the modal
+          const closeButton = document.querySelector('.wallet-adapter-modal-button-close');
+          if (closeButton) {
+            (closeButton as HTMLElement).click();
+          }
+        }
+      }, true);
+    });
+  }, 500);
+};
+
 export default function Home() {
   const { connected } = useWallet();
   const [showPhantomPrompt, setShowPhantomPrompt] = useState(false);
   
   useEffect(() => {
-    // Check if we're in Phantom's browser
-    const isInPhantomBrowser = /phantom/i.test(navigator.userAgent);
+    // Check if we're in a wallet's browser
+    const isInWalletBrowser = /phantom|solflare/i.test(navigator.userAgent);
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     
-    // Show prompt if on iOS mobile but not in Phantom browser
-    if (isMobile && isIOS && !isInPhantomBrowser) {
+    // Show prompt if on mobile but not in a wallet browser
+    if (isMobile && !isInWalletBrowser) {
       setShowPhantomPrompt(true);
     }
+    
+    // Add click interceptor for wallet modal buttons
+    const walletButton = document.querySelector('.wallet-adapter-button-trigger');
+    if (walletButton) {
+      walletButton.addEventListener('click', interceptWalletModalClicks);
+    }
+    
+    return () => {
+      // Cleanup
+      const walletButton = document.querySelector('.wallet-adapter-button-trigger');
+      if (walletButton) {
+        walletButton.removeEventListener('click', interceptWalletModalClicks);
+      }
+    };
   }, []);
 
   const openInPhantom = () => {
-    // This is the format from the Phantom deeplinks documentation
-    // Using v1/connect endpoint which is specifically designed for iOS
-    const dappUrl = encodeURIComponent(window.location.href);
-    const redirectUrl = encodeURIComponent(window.location.href);
-    
-    // According to search result #3, this is the correct format for iOS
-    const phantomDeepLink = `https://phantom.app/ul/v1/connect?app_url=${dappUrl}&redirect_link=${redirectUrl}&cluster=mainnet-beta`;
-    
-    // Redirect to Phantom
-    window.location.href = phantomDeepLink;
+    // This is the format that works for Phantom
+    window.location.href = `https://phantom.app/ul/browse/${window.location.href}`;
   };
 
   return (
@@ -192,7 +233,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* Phantom browser prompt specifically for iOS */}
+      {/* Phantom browser prompt for mobile */}
       {showPhantomPrompt && (
         <PhantomPrompt>
           <PhantomPromptTitle>Open in Phantom App</PhantomPromptTitle>
