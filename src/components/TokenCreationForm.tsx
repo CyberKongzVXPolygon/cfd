@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useWallet, useSolana } from '@thirdweb-dev/react';
+import { useWallet } from '@thirdweb-dev/react';
+import { useConnection } from '@thirdweb-dev/react/solana';
 import { 
   PublicKey, 
   Transaction, 
@@ -197,7 +198,7 @@ const ResultContainer = styled.div<{ visible: boolean }>`
 `;
 
 const TokenCreationForm = () => {
-  const { connection } = useSolana();
+  const { connection } = useConnection();
   const wallet = useWallet();
   const publicKey = wallet?.address ? new PublicKey(wallet.address) : null;
   
