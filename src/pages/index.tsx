@@ -170,7 +170,31 @@ export default function Home() {
   }, []);
 
   const openInPhantom = () => {
-    window.location.href = `https://phantom.app/ul/browse/${encodeURIComponent(window.location.href)}`;
+    // Check if iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    if (isIOS) {
+      // Use custom protocol for iOS
+      const phantomProtocolUrl = `phantom://browse/${encodeURIComponent(window.location.href)}`;
+      
+      // Try to open the app with the custom protocol
+      window.location.href = phantomProtocolUrl;
+      
+      // Set a timeout to redirect to download page if app doesn't open
+      const timeout = setTimeout(() => {
+        window.location.href = 'https://phantom.app/download';
+      }, 2000);
+      
+      // Clear the timeout if the page is hidden (app opened successfully)
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          clearTimeout(timeout);
+        }
+      });
+    } else {
+      // Keep universal links for Android
+      window.location.href = `https://phantom.app/ul/browse/${encodeURIComponent(window.location.href)}`;
+    }
   };
 
   return (
