@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useWallet } from '@thirdweb-dev/react';
-import { useConnection } from '@thirdweb-dev/react/solana';
 import { 
   PublicKey, 
   Transaction, 
   SystemProgram, 
   LAMPORTS_PER_SOL, 
-  TransactionInstruction
+  TransactionInstruction,
+  Connection,
+  clusterApiUrl
 } from '@solana/web3.js';
 import styled from 'styled-components';
 
@@ -198,7 +199,8 @@ const ResultContainer = styled.div<{ visible: boolean }>`
 `;
 
 const TokenCreationForm = () => {
-  const { connection } = useConnection();
+  // Create a connection to the Solana network
+  const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL || clusterApiUrl('mainnet-beta'));
   const wallet = useWallet();
   const publicKey = wallet?.address ? new PublicKey(wallet.address) : null;
   
