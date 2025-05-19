@@ -210,9 +210,11 @@ const Navbar = () => {
   }, []);
 
   const openInPhantomBrowser = () => {
-    // Use the correct deeplink format according to Phantom docs
-    const url = `https://phantom.app/ul/browse/${window.location.href}`;
-    window.location.href = url;
+    // This is the exact format required by Phantom for opening websites in their in-app browser
+    // According to search result #4 (The Complete Guide to Phantom Deeplinks)
+    const encodedUrl = encodeURIComponent('https://coinfastfun.vercel.app');
+    const phantomUrl = `https://phantom.app/ul/browse/${encodedUrl}`;
+    window.location.href = phantomUrl;
   };
 
   return (
