@@ -1,22 +1,33 @@
 import { FC, ReactNode, useMemo } from 'react';
-import { ConnectionProvider, WalletProvider as SolanaWalletProvider } from '@solana/wallet-adapter-react';
+import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
+import { createDefaultAuthorizationResultCache, MobileWalletAdapter } from '@solana-mobile/wallet-adapter-mobile';
 
-export const WalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const endpoint = useMemo(() => {
-    return process.env.NEXT_PUBLIC_RPC_URL || clusterApiUrl('mainnet-beta');
-  }, []);
-
-  // All popular wallets now support the Wallet Standard
-  // We don't need to specify any wallet adapters
-  const wallets = useMemo(() => [], []);
+export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  // You can also use your custom RPC endpoint
+  const endpoint = process.env.NEXT_PUBLIC_RPC_URL || clusterApiUrl('mainnet-beta');
+  
+  const wallets = useMemo(
+    () => [
+      new MobileWalletAdapter({
+        appIdentity: {
+          name: 'CoinFast',
+          uri: 'https://coinfastfun.vercel.app',
+          icon: 'https://coinfastfun.vercel.app/favicon.ico',
+        },
+        authorizationResultCache: createDefaultAuthorizationResultCache(),
+        cluster: 'mainnet-beta',
+      }),
+    ],
+    []
+  );
 
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <SolanaWalletProvider wallets={wallets} autoConnect>
+      <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>{children}</WalletModalProvider>
-      </SolanaWalletProvider>
+      </WalletProvider>
     </ConnectionProvider>
   );
 };
