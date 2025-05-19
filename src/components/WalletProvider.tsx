@@ -2,7 +2,7 @@ import { FC, ReactNode, useMemo } from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
-import { createDefaultAuthorizationResultCache, MobileWalletAdapter } from '@solana-mobile/wallet-adapter-mobile';
+import { createDefaultAuthorizationResultCache, SolanaMobileWalletAdapter } from '@solana-mobile/wallet-adapter-mobile';
 
 export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
   // You can also use your custom RPC endpoint
@@ -10,7 +10,7 @@ export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) 
   
   const wallets = useMemo(
     () => [
-      new MobileWalletAdapter({
+      new SolanaMobileWalletAdapter({
         appIdentity: {
           name: 'CoinFast',
           uri: 'https://coinfastfun.vercel.app',
