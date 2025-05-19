@@ -202,8 +202,8 @@ const TokenCreationForm = () => {
   // Create a connection to the Solana network
   const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL || clusterApiUrl('mainnet-beta'));
   const wallet = useWallet();
-  // Fix: Check if wallet exists and has a publicKey property
-  const publicKey = wallet && wallet.publicKey ? new PublicKey(wallet.publicKey) : null;
+  // According to search result #2, we need to access the address property
+  const publicKey = wallet && wallet.address ? new PublicKey(wallet.address) : null;
   
   const [tokenName, setTokenName] = useState('');
   const [tokenSymbol, setTokenSymbol] = useState('');
