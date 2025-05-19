@@ -22,10 +22,10 @@ const Logo = styled.div`
   font-size: 28px;
   font-weight: 800;
   background: linear-gradient(90deg, #4a8eff, #8964ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-size: 200% auto;
   animation: gradientAnimation 5s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   letter-spacing: -0.5px;
 
   @media (max-width: 768px) {
@@ -155,7 +155,9 @@ const PhantomBanner = styled.div`
   top: 0;
   left: 0;
   right: 0;
-  background-color: rgba(105, 84, 214, 0.95);
+  background: linear-gradient(90deg, #6954d6, #7b6ae3);
+  background-size: 200% auto;
+  animation: gradientAnimation 5s ease infinite;
   color: white;
   padding: 15px 20px;
   display: flex;
@@ -170,7 +172,7 @@ const PhantomButton = styled.button`
   color: #6954d6;
   border: none;
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -186,7 +188,7 @@ const CloseButton = styled.button`
   color: white;
   border: 1px solid white;
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: 12px;
   margin-left: 10px;
   cursor: pointer;
   font-weight: 500;

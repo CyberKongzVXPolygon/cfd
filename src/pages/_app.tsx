@@ -15,7 +15,7 @@ const GlobalStyle = createGlobalStyle`
     --primary-blue: #4a8eff;
     --primary-purple: #8964e0;
     --primary-gradient: linear-gradient(90deg, #4a8eff, #8964ff);
-    --dark-bg: #0c1224;
+    --dark-bg: #0a1022;
     --darker-bg: #080e1c;
     --card-bg: rgba(30, 40, 60, 0.5);
     --border-color: #2a3a5a;
@@ -39,7 +39,7 @@ const GlobalStyle = createGlobalStyle`
   }
   
   body {
-    background-color: var(--dark-bg);
+    background-color: #0a1022; /* Darker background color */
     background-image: 
       radial-gradient(circle at 10% 20%, rgba(74, 142, 255, 0.07) 0%, rgba(10, 15, 30, 0) 60%),
       radial-gradient(circle at 90% 50%, rgba(137, 100, 224, 0.08) 0%, rgba(10, 15, 30, 0) 70%);
@@ -48,7 +48,7 @@ const GlobalStyle = createGlobalStyle`
     padding-top: env(safe-area-inset-top);
   }
 
-  /* Animation for gradient elements */
+  /* Improved gradient animation for smoother effect */
   @keyframes gradientAnimation {
     0% {
       background-position: 0% 50%;
@@ -61,18 +61,22 @@ const GlobalStyle = createGlobalStyle`
     }
   }
 
-  /* Override wallet adapter button styles */
+  /* Override wallet adapter button styles to match "Create Token" button */
   .wallet-adapter-button {
-    background-color: var(--button-purple) !important;
-    border-radius: 50px !important;
-    padding: 14px 24px !important;
+    background: linear-gradient(90deg, #4a8eff, #8964ff) !important;
+    background-size: 200% auto !important;
+    animation: gradientAnimation 5s ease infinite !important;
+    border-radius: 12px !important; /* Reduced from 50px to match Create Token button */
+    padding: 12px 20px !important; /* Reduced padding to match size */
     height: auto !important;
     font-size: 16px !important;
     font-weight: 600 !important;
+    box-shadow: 0 4px 12px rgba(74, 142, 255, 0.3) !important;
   }
 
   .wallet-adapter-button:hover {
-    background-color: #5d49c3 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 15px rgba(74, 142, 255, 0.4) !important;
   }
 `;
 

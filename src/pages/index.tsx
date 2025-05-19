@@ -56,7 +56,7 @@ const Subtitle = styled.p`
 const ConnectBox = styled.div`
   max-width: 800px;
   margin: 0 auto;
-  background-color: rgba(17, 25, 45, 0.7);
+  background-color: rgba(13, 19, 35, 0.7);
   border-radius: 16px;
   padding: 40px;
   border: 1px solid rgba(42, 58, 90, 0.5);
@@ -77,7 +77,7 @@ const ConnectBox = styled.div`
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--primary-blue), transparent);
+    background: linear-gradient(90deg, transparent, #4a8eff, transparent);
     animation: borderGlow 4s infinite;
   }
 

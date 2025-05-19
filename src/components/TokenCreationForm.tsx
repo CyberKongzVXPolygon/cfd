@@ -135,7 +135,7 @@ const SubmitButton = styled.button`
   animation: gradientAnimation 5s ease infinite;
   color: white;
   border: none;
-  padding: 16px 28px;
+  padding: 14px 26px;
   border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
