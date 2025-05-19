@@ -170,11 +170,16 @@ export default function Home() {
   }, []);
 
   const openInPhantom = () => {
-    // This is the format that works on both iOS and Android
-    const universalUrl = `https://phantom.app/ul/browse/${window.location.href}`;
+    // URL encode the current URL
+    const encodedUrl = encodeURIComponent(window.location.href);
+    // URL encode the origin as the ref parameter
+    const encodedRef = encodeURIComponent(window.location.origin);
     
-    // Redirect directly without any conditional logic
-    window.location.href = universalUrl;
+    // Construct the proper deeplink with both required parameters
+    const phantomDeepLink = `https://phantom.app/ul/browse?url=${encodedUrl}&ref=${encodedRef}`;
+    
+    // Redirect to Phantom
+    window.location.href = phantomDeepLink;
   };
 
   return (
