@@ -1,4 +1,5 @@
-import { ThirdwebProvider } from "@thirdweb-dev/react/solana";
+import { ThirdwebProvider } from "@thirdweb-dev/react";
+import { Solana } from "@thirdweb-dev/chains";
 import type { AppProps } from "next/app";
 import { createGlobalStyle } from 'styled-components';
 
@@ -44,7 +45,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     <>
       <GlobalStyle />
       <ThirdwebProvider 
-        network="mainnet-beta"
+        activeChain={Solana}
         clientId={process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID}
       >
         <Component {...pageProps} />
