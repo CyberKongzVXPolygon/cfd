@@ -27,7 +27,9 @@ const Title = styled.h1`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-size: 200% auto;
-  animation: gradientAnimation 5s ease infinite;
+  animation: 
+    gradientAnimation 5s ease infinite,
+    floatingAnimation 3s ease-in-out infinite;
   margin-bottom: 20px;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -126,6 +128,8 @@ export default function Home() {
         <meta name="description" content="Launch your own token on Solana in seconds. No coding required." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/favicon.ico" />
+        <link rel="shortcut icon" href="/favicon.ico" />
       </Head>
 
       <Banner />
