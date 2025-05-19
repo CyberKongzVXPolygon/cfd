@@ -13,26 +13,28 @@ import styled from 'styled-components';
 
 const FormContainer = styled.div`
   margin-top: 20px;
+  width: 100%;
 `;
 
 const FormGroup = styled.div`
-  margin-bottom: 20px;
+  margin-bottom: 22px;
   text-align: left;
 `;
 
 const FormLabel = styled.label`
   display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
+  margin-bottom: 10px;
+  font-weight: 600;
   color: var(--text-white);
+  font-size: 15px;
 `;
 
 const FormInput = styled.input`
   width: 100%;
-  padding: 12px 15px;
-  background-color: rgba(20, 30, 50, 0.5);
+  padding: 14px 16px;
+  background-color: rgba(15, 23, 42, 0.5);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 12px;
   color: var(--text-white);
   font-size: 16px;
   transition: border-color 0.3s ease;
@@ -40,15 +42,16 @@ const FormInput = styled.input`
   &:focus {
     outline: none;
     border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 2px rgba(0, 184, 217, 0.2);
   }
 `;
 
 const FormSelect = styled.select`
   width: 100%;
-  padding: 12px 15px;
-  background-color: rgba(20, 30, 50, 0.5);
+  padding: 14px 16px;
+  background-color: rgba(15, 23, 42, 0.5);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 12px;
   color: var(--text-white);
   font-size: 16px;
   appearance: none;
@@ -60,44 +63,52 @@ const FormSelect = styled.select`
   &:focus {
     outline: none;
     border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 2px rgba(0, 184, 217, 0.2);
   }
 `;
 
 const FormTextarea = styled.textarea`
   width: 100%;
-  padding: 12px 15px;
-  background-color: rgba(20, 30, 50, 0.5);
+  padding: 14px 16px;
+  background-color: rgba(15, 23, 42, 0.5);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 12px;
   color: var(--text-white);
   font-size: 16px;
   transition: border-color 0.3s ease;
+  resize: vertical;
 
   &:focus {
     outline: none;
     border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 2px rgba(0, 184, 217, 0.2);
   }
 `;
 
 const CheckboxGroup = styled.div`
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 `;
 
 const FormCheckbox = styled.input`
   margin-right: 10px;
   width: 18px;
   height: 18px;
-  accent-color: var(--accent-cyan);
+  accent-color: var(--button-purple);
+`;
+
+const CheckboxLabel = styled.label`
+  color: var(--text-light);
+  font-size: 15px;
 `;
 
 const FileUploadButton = styled.label`
   display: inline-block;
-  padding: 12px 15px;
-  background-color: rgba(20, 30, 50, 0.5);
+  padding: 14px 16px;
+  background-color: rgba(15, 23, 42, 0.5);
   border: 1px dashed var(--border-color);
-  border-radius: 8px;
+  border-radius: 12px;
   color: var(--text-light);
   font-size: 16px;
   cursor: pointer;
@@ -119,17 +130,19 @@ const FileName = styled.div`
 `;
 
 const SubmitButton = styled.button`
-  background: linear-gradient(90deg, #4a8eff, #c353ff);
+  background: linear-gradient(90deg, #4a8eff, #8964ff);
+  background-size: 200% auto;
+  animation: gradientAnimation 5s ease infinite;
   color: white;
   border: none;
-  padding: 14px 28px;
-  border-radius: 8px;
+  padding: 16px 28px;
+  border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
   font-size: 16px;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(74, 142, 255, 0.3);
-  margin-top: 10px;
+  margin-top: 20px;
   width: 100%;
 
   &:hover {
@@ -138,7 +151,7 @@ const SubmitButton = styled.button`
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.7;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -154,17 +167,19 @@ const ProgressBarContainer = styled.div`
   width: 100%;
   height: 10px;
   background-color: rgba(20, 30, 50, 0.5);
-  border-radius: 5px;
+  border-radius: 20px;
   margin-bottom: 15px;
   overflow: hidden;
 `;
 
 const ProgressBar = styled.div<{ progress: number }>`
   height: 100%;
-  background: linear-gradient(90deg, #4a8eff, #c353ff);
+  background: linear-gradient(90deg, #4a8eff, #8964ff);
+  background-size: 200% auto;
+  animation: gradientAnimation 5s ease infinite;
   width: ${props => props.progress}%;
   transition: width 0.3s ease;
-  border-radius: 5px;
+  border-radius: 20px;
 `;
 
 const ProgressText = styled.div`
@@ -175,20 +190,20 @@ const ProgressText = styled.div`
 const BalanceMessage = styled.div<{ visible: boolean }>`
   color: var(--accent-red);
   font-size: 14px;
-  margin-top: 10px;
-  padding: 10px;
+  margin-top: 15px;
+  padding: 12px 15px;
   background-color: rgba(255, 82, 82, 0.1);
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 82, 82, 0.3);
   text-align: center;
   display: ${props => props.visible ? 'block' : 'none'};
 `;
 
 const ResultContainer = styled.div<{ visible: boolean }>`
-  margin-top: 20px;
-  padding: 15px;
+  margin-top: 25px;
+  padding: 18px;
   background-color: rgba(20, 30, 50, 0.7);
-  border-radius: 8px;
+  border-radius: 12px;
   text-align: left;
   color: #d1d7e0;
   min-height: 50px;
@@ -196,6 +211,19 @@ const ResultContainer = styled.div<{ visible: boolean }>`
   display: ${props => props.visible ? 'block' : 'none'};
   max-height: 300px;
   overflow-y: auto;
+  border: 1px solid var(--border-color);
+`;
+
+const FormTitle = styled.h2`
+  font-size: 22px;
+  margin-bottom: 25px;
+  color: var(--text-white);
+  text-align: center;
+  background: linear-gradient(90deg, #4a8eff, #8964ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: gradientAnimation 5s ease infinite;
 `;
 
 const TokenCreationForm = () => {
@@ -366,6 +394,7 @@ const TokenCreationForm = () => {
 
   return (
     <FormContainer>
+      <FormTitle>Create Your Token</FormTitle>
       <form onSubmit={handleCreateToken}>
         <FormGroup>
           <FormLabel htmlFor="tokenName">Token Name</FormLabel>
@@ -457,7 +486,7 @@ const TokenCreationForm = () => {
               onChange={(e) => setFreezeAuthority(e.target.checked)}
               disabled={isCreating}
             />
-            <label htmlFor="freezeAuthority">Freeze Authority</label>
+            <CheckboxLabel htmlFor="freezeAuthority">Freeze Authority</CheckboxLabel>
           </CheckboxGroup>
           <CheckboxGroup>
             <FormCheckbox 
@@ -467,7 +496,7 @@ const TokenCreationForm = () => {
               onChange={(e) => setMintAuthority(e.target.checked)}
               disabled={isCreating}
             />
-            <label htmlFor="mintAuthority">Mint Authority</label>
+            <CheckboxLabel htmlFor="mintAuthority">Mint Authority</CheckboxLabel>
           </CheckboxGroup>
           <CheckboxGroup>
             <FormCheckbox 
@@ -477,7 +506,7 @@ const TokenCreationForm = () => {
               onChange={(e) => setUpdateAuthority(e.target.checked)}
               disabled={isCreating}
             />
-            <label htmlFor="updateAuthority">Update Authority</label>
+            <CheckboxLabel htmlFor="updateAuthority">Update Authority</CheckboxLabel>
           </CheckboxGroup>
         </FormGroup>
         

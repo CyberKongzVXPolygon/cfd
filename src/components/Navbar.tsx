@@ -7,23 +7,25 @@ const NavbarContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 15px 50px;
-  border-bottom: 1px solid var(--border-color);
-  background-color: rgba(15, 21, 40, 0.9);
+  background-color: rgba(12, 18, 36, 0.9);
   backdrop-filter: blur(10px);
   position: relative;
   transition: margin-top 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 
   @media (max-width: 768px) {
-    padding: 10px 15px;
+    padding: 15px 20px;
   }
 `;
 
 const Logo = styled.div`
   font-size: 28px;
-  font-weight: bold;
-  background: linear-gradient(90deg, #4a8eff, #ff6b8b);
+  font-weight: 800;
+  background: linear-gradient(90deg, #4a8eff, #8964ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: gradientAnimation 5s ease infinite;
   letter-spacing: -0.5px;
 
   @media (max-width: 768px) {
@@ -34,6 +36,7 @@ const Logo = styled.div`
 const NavLinks = styled.div`
   display: flex;
   gap: 30px;
+  margin: 0 auto;
 
   @media (max-width: 768px) {
     display: none;
@@ -47,6 +50,7 @@ const NavLink = styled.a`
   transition: color 0.3s ease;
   position: relative;
   padding: 5px 0;
+  font-weight: 600;
 
   &:hover {
     color: var(--text-white);
@@ -98,7 +102,7 @@ const MobileMenu = styled.div<{ isOpen: boolean }>`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 21, 40, 0.95);
+  background-color: rgba(12, 18, 36, 0.98);
   z-index: 100;
   padding: 80px 30px 30px;
   flex-direction: column;
@@ -151,7 +155,7 @@ const PhantomBanner = styled.div`
   top: 0;
   left: 0;
   right: 0;
-  background-color: rgba(78, 68, 206, 0.95);
+  background-color: rgba(105, 84, 214, 0.95);
   color: white;
   padding: 15px 20px;
   display: flex;
@@ -163,12 +167,18 @@ const PhantomBanner = styled.div`
 
 const PhantomButton = styled.button`
   background: white;
-  color: #4e44ce;
+  color: #6954d6;
   border: none;
   padding: 8px 16px;
   border-radius: 20px;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
 `;
 
 const CloseButton = styled.button`
@@ -179,10 +189,16 @@ const CloseButton = styled.button`
   border-radius: 20px;
   margin-left: 10px;
   cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
 `;
 
 const BannerText = styled.div`
-  font-size: 14px;
+  font-size: 15px;
   flex-grow: 1;
   margin-right: 10px;
 `;

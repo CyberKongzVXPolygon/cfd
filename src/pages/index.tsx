@@ -12,26 +12,28 @@ import Footer from '@/components/Footer';
 
 const MainContent = styled.div`
   text-align: center;
-  padding: 50px 20px;
+  padding: 60px 20px;
   max-width: 1200px;
   margin: 0 auto;
 
   @media (max-width: 768px) {
-    padding: 20px 15px 40px 15px;
+    padding: 30px 15px 40px 15px;
   }
 `;
 
 const Title = styled.h1`
   font-size: 48px;
-  background: linear-gradient(90deg, #4a8eff, #c353ff);
+  background: linear-gradient(90deg, #4a8eff, #8964ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: gradientAnimation 5s ease infinite;
   margin-bottom: 20px;
   font-weight: 700;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
 
   @media (max-width: 768px) {
-    font-size: 32px;
+    font-size: 36px;
     margin-bottom: 15px;
   }
 `;
@@ -39,28 +41,34 @@ const Title = styled.h1`
 const Subtitle = styled.p`
   font-size: 18px;
   color: var(--text-light);
-  margin-bottom: 40px;
+  margin-bottom: 50px;
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
+  line-height: 1.6;
 
   @media (max-width: 768px) {
-    font-size: 14px;
-    margin-bottom: 20px;
+    font-size: 16px;
+    margin-bottom: 30px;
   }
 `;
 
 const ConnectBox = styled.div`
   max-width: 800px;
   margin: 0 auto;
-  background-color: rgba(30, 40, 60, 0.5);
-  border-radius: 12px;
+  background-color: rgba(17, 25, 45, 0.7);
+  border-radius: 16px;
   padding: 40px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  margin-bottom: 40px;
+  border: 1px solid rgba(42, 58, 90, 0.5);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  margin-bottom: 60px;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 
   &::before {
     content: '';
@@ -79,9 +87,16 @@ const ConnectBox = styled.div`
   }
 
   @media (max-width: 768px) {
-    padding: 25px 15px;
-    margin-bottom: 20px;
+    padding: 30px 20px;
+    margin-bottom: 40px;
   }
+`;
+
+const ConnectMessage = styled.p`
+  font-size: 18px;
+  color: var(--text-light);
+  margin-bottom: 20px;
+  font-weight: 500;
 `;
 
 const WalletButtonContainer = styled.div`
@@ -93,12 +108,15 @@ const WalletButtonContainer = styled.div`
 export default function Home() {
   const { connected } = useWallet();
   const [showPhantomPrompt, setShowPhantomPrompt] = useState(false);
-  const [isInPhantomBrowser, setIsInPhantomBrowser] = useState(false);
   
   useEffect(() => {
     // Check if we're in Phantom's browser
     const isPhantomBrowser = /phantom/i.test(navigator.userAgent);
-    setIsInPhantomBrowser(isPhantomBrowser);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile && !isPhantomBrowser) {
+      setShowPhantomPrompt(true);
+    }
   }, []);
 
   return (
@@ -118,9 +136,14 @@ export default function Home() {
         <Subtitle>Launch your own token on Solana in seconds. No coding required.</Subtitle>
         
         <ConnectBox>
-          <WalletButtonContainer>
-            <WalletMultiButton />
-          </WalletButtonContainer>
+          {!connected && (
+            <>
+              <ConnectMessage>Please connect your wallet to continue</ConnectMessage>
+              <WalletButtonContainer>
+                <WalletMultiButton />
+              </WalletButtonContainer>
+            </>
+          )}
           
           {connected && <TokenCreationForm />}
         </ConnectBox>
