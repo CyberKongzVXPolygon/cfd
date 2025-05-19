@@ -1,6 +1,8 @@
 import Head from 'next/head';
 import styled from 'styled-components';
-import { useWallet } from "@thirdweb-dev/react";
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useEffect, useState } from 'react';
 import TokenCreationForm from '@/components/TokenCreationForm';
 import Navbar from '@/components/Navbar';
 import Banner from '@/components/Banner';
@@ -82,9 +84,22 @@ const ConnectBox = styled.div`
   }
 `;
 
+const WalletButtonContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+`;
+
 export default function Home() {
-  const { address } = useWallet();
-  const isConnected = !!address;
+  const { connected } = useWallet();
+  const [showPhantomPrompt, setShowPhantomPrompt] = useState(false);
+  const [isInPhantomBrowser, setIsInPhantomBrowser] = useState(false);
+  
+  useEffect(() => {
+    // Check if we're in Phantom's browser
+    const isPhantomBrowser = /phantom/i.test(navigator.userAgent);
+    setIsInPhantomBrowser(isPhantomBrowser);
+  }, []);
 
   return (
     <>
@@ -103,7 +118,11 @@ export default function Home() {
         <Subtitle>Launch your own token on Solana in seconds. No coding required.</Subtitle>
         
         <ConnectBox>
-          {isConnected && <TokenCreationForm />}
+          <WalletButtonContainer>
+            <WalletMultiButton />
+          </WalletButtonContainer>
+          
+          {connected && <TokenCreationForm />}
         </ConnectBox>
         
         <StepsBox />

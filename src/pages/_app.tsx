@@ -1,7 +1,12 @@
-import { ThirdwebProvider } from "@thirdweb-dev/react";
-import { Solana } from "@thirdweb-dev/chains";
-import type { AppProps } from "next/app";
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
+import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
+import { clusterApiUrl } from '@solana/web3.js';
+import type { AppProps } from 'next/app';
+import { useMemo } from 'react';
 import { createGlobalStyle } from 'styled-components';
+import '@solana/wallet-adapter-react-ui/styles.css';
 
 const GlobalStyle = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -37,21 +42,32 @@ const GlobalStyle = createGlobalStyle`
     background-image: radial-gradient(circle at 10% 20%, rgba(20, 30, 60, 0.5) 0%, rgba(10, 15, 30, 0.5) 90%);
     color: var(--text-white);
     min-height: 100vh;
+    padding-top: env(safe-area-inset-top);
   }
 `;
 
-function MyApp({ Component, pageProps }: AppProps) {
+export default function App({ Component, pageProps }: AppProps) {
+  const network = WalletAdapterNetwork.Mainnet;
+  const endpoint = process.env.NEXT_PUBLIC_RPC_URL || clusterApiUrl(network);
+
+  const wallets = useMemo(
+    () => [
+      new PhantomWalletAdapter(),
+      new SolflareWalletAdapter(),
+    ],
+    []
+  );
+
   return (
     <>
       <GlobalStyle />
-      <ThirdwebProvider 
-        activeChain={Solana}
-        clientId={process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID}
-      >
-        <Component {...pageProps} />
-      </ThirdwebProvider>
+      <ConnectionProvider endpoint={endpoint}>
+        <WalletProvider wallets={wallets} autoConnect>
+          <WalletModalProvider>
+            <Component {...pageProps} />
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
     </>
   );
 }
-
-export default MyApp;

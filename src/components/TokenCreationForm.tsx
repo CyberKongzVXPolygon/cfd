@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useWallet, useConnectionStatus } from '@thirdweb-dev/react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { 
   PublicKey, 
   Transaction, 
@@ -201,12 +201,7 @@ const ResultContainer = styled.div<{ visible: boolean }>`
 const TokenCreationForm = () => {
   // Create a connection to the Solana network
   const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL || clusterApiUrl('mainnet-beta'));
-  const wallet = useWallet();
-  const connectionStatus = useConnectionStatus();
-  
-  // Get the wallet address safely
-  const walletAddress = wallet?.getAccount?.()?.address || null;
-  const publicKey = walletAddress ? new PublicKey(walletAddress) : null;
+  const { publicKey, signTransaction, sendTransaction } = useWallet();
   
   const [tokenName, setTokenName] = useState('');
   const [tokenSymbol, setTokenSymbol] = useState('');
@@ -271,7 +266,7 @@ const TokenCreationForm = () => {
   const handleCreateToken = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!publicKey) {
+    if (!publicKey || !signTransaction) {
       addToResult("Wallet not connected. Please connect your wallet first.");
       return;
     }
@@ -332,17 +327,11 @@ const TokenCreationForm = () => {
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = publicKey;
       
-      // Send transaction using Thirdweb's wallet
+      // Send transaction using standard Solana wallet adapter
       try {
-        // Convert to base64 string for Thirdweb wallet
-        const serializedTransaction = transaction.serialize({
-          requireAllSignatures: false,
-          verifySignatures: false
-        });
-        const base64Transaction = serializedTransaction.toString('base64');
-        
-        // Send transaction
-        const signature = await wallet.signAndSendTransaction(base64Transaction);
+        // Sign and send transaction
+        const signedTransaction = await signTransaction(transaction);
+        const signature = await sendTransaction(signedTransaction, connection);
         
         setProgress(70);
         setProgressText('Finalizing token creation...');
