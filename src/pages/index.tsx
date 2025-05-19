@@ -170,32 +170,11 @@ export default function Home() {
   }, []);
 
   const openInPhantom = () => {
-    // The correct format to open a URL in Phantom's browser
-    const encodedUrl = encodeURIComponent(window.location.href);
-    const phantomBrowseUrl = `https://phantom.app/ul/browser?url=${encodedUrl}`;
+    // This is the format that works on both iOS and Android
+    const universalUrl = `https://phantom.app/ul/browse/${window.location.href}`;
     
-    // For iOS, we need to use a different approach
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    
-    if (isIOS) {
-      // iOS needs the custom protocol with the correct format
-      window.location.href = `phantom://browser?url=${encodedUrl}`;
-      
-      // Set a timeout to redirect to universal link if app doesn't open
-      const timeout = setTimeout(() => {
-        window.location.href = phantomBrowseUrl;
-      }, 2000);
-      
-      // Clear the timeout if the page is hidden (app opened successfully)
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          clearTimeout(timeout);
-        }
-      });
-    } else {
-      // For Android, use the universal link format
-      window.location.href = phantomBrowseUrl;
-    }
+    // Redirect directly without any conditional logic
+    window.location.href = universalUrl;
   };
 
   return (
