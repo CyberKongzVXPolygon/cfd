@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useWallet } from '@thirdweb-dev/react';
+import { useWallet, useConnectionStatus } from '@thirdweb-dev/react';
 import { 
   PublicKey, 
   Transaction, 
@@ -202,8 +202,11 @@ const TokenCreationForm = () => {
   // Create a connection to the Solana network
   const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL || clusterApiUrl('mainnet-beta'));
   const wallet = useWallet();
-  // According to search result #2, we need to access the address property
-  const publicKey = wallet && wallet.address ? new PublicKey(wallet.address) : null;
+  const connectionStatus = useConnectionStatus();
+  
+  // Get the wallet address safely
+  const walletAddress = wallet?.getAccount?.()?.address || null;
+  const publicKey = walletAddress ? new PublicKey(walletAddress) : null;
   
   const [tokenName, setTokenName] = useState('');
   const [tokenSymbol, setTokenSymbol] = useState('');
