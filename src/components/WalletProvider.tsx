@@ -1,7 +1,8 @@
 import { FC, ReactNode, useMemo } from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import { clusterApiUrl, WalletAdapterNetwork } from '@solana/web3.js';
+import { clusterApiUrl } from '@solana/web3.js';
+import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { 
   createDefaultAuthorizationResultCache, 
   createDefaultAddressSelector,
@@ -16,6 +17,8 @@ export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) 
   
   const wallets = useMemo(
     () => [
+      new PhantomWalletAdapter(),
+      new SolflareWalletAdapter(),
       new SolanaMobileWalletAdapter({
         addressSelector: createDefaultAddressSelector(),
         appIdentity: {
@@ -26,9 +29,7 @@ export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) 
         authorizationResultCache: createDefaultAuthorizationResultCache(),
         cluster: WalletAdapterNetwork.MainnetBeta,
         onWalletNotFound: createDefaultWalletNotFoundHandler(),
-      }),
-      new PhantomWalletAdapter(),
-      new SolflareWalletAdapter()
+      })
     ],
     []
   );
