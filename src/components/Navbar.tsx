@@ -210,11 +210,27 @@ const Navbar = () => {
   }, []);
 
   const openInPhantomBrowser = () => {
-    // This is the exact format required by Phantom for opening websites in their in-app browser
-    // According to search result #4 (The Complete Guide to Phantom Deeplinks)
+    // Based on search result #6, using this format that includes a custom ref parameter
+    // which seems to be required for successful deeplinks
     const encodedUrl = encodeURIComponent('https://coinfastfun.vercel.app');
-    const phantomUrl = `https://phantom.app/ul/browse/${encodedUrl}`;
-    window.location.href = phantomUrl;
+    
+    // Using the format from the working example in search result #6
+    const phantomUrl = `https://phantom.app/ul/browse/${encodedUrl}?ref=coinfastfun://app`;
+    
+    // Try multiple ways to open the URL to increase chances of success
+    try {
+      // Primary method
+      window.location.href = phantomUrl;
+      
+      // Backup method after a short delay if the first one doesn't trigger
+      setTimeout(() => {
+        window.open(phantomUrl, '_blank');
+      }, 300);
+    } catch (error) {
+      console.error("Error opening Phantom:", error);
+      // Fallback to direct app store link if deep linking fails
+      window.location.href = 'https://phantom.app/download';
+    }
   };
 
   return (
