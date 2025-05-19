@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { ConnectWallet } from "@thirdweb-dev/react";
 
 const NavbarContainer = styled.div`
   display: flex;
@@ -132,6 +132,19 @@ const MobileNavLink = styled.a`
   }
 `;
 
+const WalletButtonWrapper = styled.div`
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const MobileWalletButtonWrapper = styled.div`
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;
+
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -146,7 +159,13 @@ const Navbar = () => {
           <NavLink href="https://raydium.io/liquidity/create-pool/" target="_blank">Create Liquidity</NavLink>
           <NavLink href="https://raydium.io/portfolio/" target="_blank">Manage Liquidity</NavLink>
         </NavLinks>
-        <WalletMultiButton />
+        <WalletButtonWrapper>
+          <ConnectWallet 
+            theme="dark" 
+            btnTitle="Connect Wallet"
+            modalSize="compact"
+          />
+        </WalletButtonWrapper>
       </NavbarContainer>
 
       <MobileMenu isOpen={isMenuOpen}>
@@ -155,6 +174,13 @@ const Navbar = () => {
         <MobileNavLink href="#" onClick={() => setIsMenuOpen(false)}>Trending Tokens <NewBadge>SOON</NewBadge></MobileNavLink>
         <MobileNavLink href="https://raydium.io/liquidity/create-pool/" target="_blank" onClick={() => setIsMenuOpen(false)}>Create Liquidity</MobileNavLink>
         <MobileNavLink href="https://raydium.io/portfolio/" target="_blank" onClick={() => setIsMenuOpen(false)}>Manage Liquidity</MobileNavLink>
+        <MobileWalletButtonWrapper>
+          <ConnectWallet 
+            theme="dark" 
+            btnTitle="Connect Wallet"
+            modalSize="compact"
+          />
+        </MobileWalletButtonWrapper>
       </MobileMenu>
     </>
   );
