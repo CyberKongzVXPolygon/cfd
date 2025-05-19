@@ -1,8 +1,14 @@
 import { FC, ReactNode, useMemo } from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import { clusterApiUrl } from '@solana/web3.js';
-import { createDefaultAuthorizationResultCache, SolanaMobileWalletAdapter } from '@solana-mobile/wallet-adapter-mobile';
+import { clusterApiUrl, WalletAdapterNetwork } from '@solana/web3.js';
+import { 
+  createDefaultAuthorizationResultCache, 
+  createDefaultAddressSelector,
+  createDefaultWalletNotFoundHandler,
+  SolanaMobileWalletAdapter 
+} from '@solana-mobile/wallet-adapter-mobile';
+import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
 
 export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
   // You can also use your custom RPC endpoint
@@ -11,14 +17,18 @@ export const SolanaWalletProvider: FC<{ children: ReactNode }> = ({ children }) 
   const wallets = useMemo(
     () => [
       new SolanaMobileWalletAdapter({
+        addressSelector: createDefaultAddressSelector(),
         appIdentity: {
           name: 'CoinFast',
           uri: 'https://coinfastfun.vercel.app',
-          icon: 'https://coinfastfun.vercel.app/favicon.ico',
+          icon: 'favicon.ico',
         },
         authorizationResultCache: createDefaultAuthorizationResultCache(),
-        cluster: 'mainnet-beta',
+        cluster: WalletAdapterNetwork.MainnetBeta,
+        onWalletNotFound: createDefaultWalletNotFoundHandler(),
       }),
+      new PhantomWalletAdapter(),
+      new SolflareWalletAdapter()
     ],
     []
   );
