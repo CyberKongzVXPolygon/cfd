@@ -91,7 +91,7 @@ const ExternalLink = styled.a`
 // Seamless iframe container that expands with content
 const IframeContainer = styled.div<{ isLoaded: boolean }>`
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Allow popups to extend beyond container */
   width: 100%;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   border: 1px solid var(--border-color);
@@ -105,19 +105,27 @@ const IframeContainer = styled.div<{ isLoaded: boolean }>`
     border-left: none;
     border-right: none;
     box-shadow: none;
+    overflow: visible; /* Ensure popups can be seen and interacted with */
+    min-height: 900px; /* Increase minimum height for mobile */
   }
 `;
 
-// Responsive iframe that automatically adjusts height
+// Responsive iframe that automatically adjusts height and scales to 90% on mobile
 const ResponsiveIframe = styled.iframe`
   display: block;
   width: 100%;
   height: 100%;
   border: none;
-  overflow: hidden;
+  overflow: visible; /* Change to visible to allow popups to extend beyond iframe */
   position: absolute;
   top: 0;
   left: 0;
+  
+  @media (max-width: 768px) {
+    transform: scale(0.9); /* Scale to 90% on mobile */
+    transform-origin: 0 0;
+    width: 111.11%; /* Compensate for scaling to maintain full width (100% ÷ 0.9 = 111.11%) */
+  }
 `;
 
 // Loading state display
@@ -156,35 +164,94 @@ const CreateLiquidityPage = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Handle iframe load event
+  // Add custom CSS to handle wallet popups
+  useEffect(() => {
+    // Create a style element to inject custom CSS
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+      /* Override any z-index issues that might prevent interaction */
+      .wallet-adapter-modal {
+        z-index: 9999 !important;
+      }
+      
+      /* Make sure Raydium wallet selector is scrollable on mobile */
+      iframe {
+        pointer-events: auto !important;
+      }
+      
+      body {
+        overflow: auto !important;
+      }
+    `;
+    document.head.appendChild(styleElement);
+    
+    // Cleanup
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
+
+  // Handle iframe load event with improved height management
   const handleIframeLoad = () => {
     setIsLoaded(true);
     
-    // Add event listener to update iframe height
-    const updateHeight = () => {
+    // Function to check if we can access the iframe content
+    const canAccessIframe = () => {
       try {
-        const iframe = iframeRef.current;
-        if (iframe && iframe.contentWindow) {
-          // Get the height of the iframe content
-          const height = iframe.contentWindow.document.body.scrollHeight + 'px';
+        // Try to access the iframe contentWindow
+        return !!iframeRef.current?.contentWindow?.document;
+      } catch (e) {
+        return false;
+      }
+    };
+    
+    // Update height based on iframe content or set a fixed height
+    const updateHeight = () => {
+      // Get the iframe element
+      const iframe = iframeRef.current;
+      if (!iframe) return;
+      
+      // Try to get the content height if we can access the iframe
+      if (canAccessIframe()) {
+        try {
+          const height = iframe.contentWindow?.document.body.scrollHeight + 'px';
           setIframeHeight(height);
           if (containerRef.current) {
             containerRef.current.style.height = height;
           }
+        } catch (e) {
+          console.log("Could not access iframe content height");
+          setDefaultHeight();
         }
-      } catch (e) {
-        console.log("Could not access iframe content - it may be cross-origin restricted");
+      } else {
+        // If we can't access the iframe content, set a larger default height
+        setDefaultHeight();
+      }
+    };
+    
+    // Set a default height based on screen size
+    const setDefaultHeight = () => {
+      const height = window.innerWidth <= 768 ? '1500px' : '1000px';
+      setIframeHeight(height);
+      if (containerRef.current) {
+        containerRef.current.style.height = height;
       }
     };
 
     // Initial height update
     updateHeight();
     
+    // Update height when window is resized
+    window.addEventListener('resize', updateHeight);
+    
     // Set up interval to check for height changes
     const interval = setInterval(updateHeight, 1000);
     
     // Cleanup
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('resize', updateHeight);
+    };
   };
 
   return (
@@ -221,9 +288,9 @@ const CreateLiquidityPage = () => {
               ref={iframeRef}
               src="https://raydium.io/liquidity/create-pool/" 
               title="Create Liquidity on Raydium" 
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
               onLoad={handleIframeLoad}
-              scrolling="no"
+              allow="fullscreen"
             />
           </IframeContainer>
         </ContentWrapper>

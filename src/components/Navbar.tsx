@@ -315,8 +315,6 @@ const Navbar = () => {
             Manage Liquidity
           </MobileNavLink>
         </Link>
-        <MobileNavLink href="https://raydium.io/liquidity/create-pool/" target="_blank" onClick={() => setIsMenuOpen(false)}>Create Liquidity</MobileNavLink>
-        <MobileNavLink href="https://raydium.io/portfolio/" target="_blank" onClick={() => setIsMenuOpen(false)}>Manage Liquidity</MobileNavLink>
         <MobileWalletButtonWrapper>
           <WalletMultiButton />
         </MobileWalletButtonWrapper>
