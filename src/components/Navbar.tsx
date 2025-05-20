@@ -281,8 +281,12 @@ const Navbar = () => {
           <Link href="/trending" passHref legacyBehavior>
             <NavLink active={isActive('/trending')}>Trending Tokens <NewBadge>NEW</NewBadge></NavLink>
           </Link>
-          <NavLink href="https://raydium.io/liquidity/create-pool/" target="_blank">Create Liquidity</NavLink>
-          <NavLink href="https://raydium.io/portfolio/" target="_blank">Manage Liquidity</NavLink>
+          <Link href="/create-liquidity" passHref legacyBehavior>
+            <NavLink active={isActive('/create-liquidity')}>Create Liquidity</NavLink>
+          </Link>
+          <Link href="/manage-liquidity" passHref legacyBehavior>
+            <NavLink active={isActive('/manage-liquidity')}>Manage Liquidity</NavLink>
+          </Link>
         </NavLinks>
         <WalletButtonWrapper>
           <WalletMultiButton />
@@ -299,6 +303,16 @@ const Navbar = () => {
         <Link href="/trending" passHref legacyBehavior>
           <MobileNavLink active={isActive('/trending')} onClick={() => setIsMenuOpen(false)}>
             Trending Tokens <NewBadge>NEW</NewBadge>
+          </MobileNavLink>
+        </Link>
+        <Link href="/create-liquidity" passHref legacyBehavior>
+          <MobileNavLink active={isActive('/create-liquidity')} onClick={() => setIsMenuOpen(false)}>
+            Create Liquidity
+          </MobileNavLink>
+        </Link>
+        <Link href="/manage-liquidity" passHref legacyBehavior>
+          <MobileNavLink active={isActive('/manage-liquidity')} onClick={() => setIsMenuOpen(false)}>
+            Manage Liquidity
           </MobileNavLink>
         </Link>
         <MobileNavLink href="https://raydium.io/liquidity/create-pool/" target="_blank" onClick={() => setIsMenuOpen(false)}>Create Liquidity</MobileNavLink>
