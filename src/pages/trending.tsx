@@ -70,12 +70,23 @@ const TokenCard = styled.div`
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     border-color: rgba(74, 142, 255, 0.3);
   }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
 `;
 
 const TokenInfo = styled.div`
   display: flex;
   align-items: center;
   gap: 20px;
+  flex: 1;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const TokenIcon = styled.div`
@@ -87,6 +98,9 @@ const TokenIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text-white);
   
   img {
     width: 100%;
@@ -136,6 +150,11 @@ const ActionArea = styled.div`
   flex-direction: column;
   align-items: flex-end;
   gap: 10px;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    align-items: center;
+  }
 `;
 
 const MarketCap = styled.div`
@@ -152,6 +171,10 @@ const MarketCap = styled.div`
     font-size: 20px;
     font-weight: 700;
     color: #4caf50;
+  }
+  
+  @media (max-width: 768px) {
+    text-align: center;
   }
 `;
 
@@ -170,6 +193,8 @@ const CreateButton = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 150px;
+  justify-content: center;
 
   &:hover {
     transform: translateY(-2px);
@@ -179,6 +204,10 @@ const CreateButton = styled.button`
   svg {
     width: 18px;
     height: 18px;
+  }
+  
+  @media (max-width: 768px) {
+    width: 100%;
   }
 `;
 
@@ -232,6 +261,33 @@ const LoadingContainer = styled.div`
   color: var(--text-light);
 `;
 
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+  gap: 8px;
+`;
+
+const PaginationButton = styled.button<{ active?: boolean }>`
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: ${props => props.active ? 'rgba(74, 142, 255, 0.2)' : 'rgba(30, 40, 60, 0.5)'};
+  color: ${props => props.active ? 'var(--primary-blue)' : 'var(--text-light)'};
+  border: 1px solid ${props => props.active ? 'var(--primary-blue)' : 'var(--border-color)'};
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: rgba(74, 142, 255, 0.1);
+    color: var(--primary-blue);
+  }
+`;
+
 interface Token {
   id: string;
   name: string;
@@ -244,6 +300,8 @@ interface Token {
 const TrendingPage = () => {
   const [tokens, setTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const tokensPerPage = 10;
   const router = useRouter();
 
   useEffect(() => {
@@ -255,7 +313,7 @@ const TrendingPage = () => {
     
     try {
       // We would normally fetch from the pump.fun API here
-      // Using hardcoded data for now based on the screenshot
+      // Using hardcoded data for now
       setTimeout(() => {
         setTokens([
           {
@@ -282,6 +340,222 @@ const TrendingPage = () => {
             marketCap: 45200,
             image: '/images/solion.png',
           },
+          {
+            id: 'solanameme',
+            name: 'Solana Meme',
+            symbol: 'SOMEME',
+            description: 'The definitive meme token of the Solana ecosystem, focusing on community engagement and viral potential',
+            marketCap: 128500,
+            image: '/images/solanameme.png',
+          },
+          {
+            id: 'cryptoape',
+            name: 'Crypto Ape',
+            symbol: 'CAPE',
+            description: 'Join the ape revolution with this community-driven token focused on NFT integrations and metaverse development',
+            marketCap: 95700,
+            image: '/images/cryptoape.png',
+          },
+          {
+            id: 'solcat',
+            name: 'Solana Cat',
+            symbol: 'SCAT',
+            description: 'The first feline-themed token on Solana with unique tokenomics and community governance',
+            marketCap: 67400,
+            image: '/images/solcat.png',
+          },
+          {
+            id: 'futurecity',
+            name: 'Future City',
+            symbol: 'FCITY',
+            description: 'Building the decentralized metaverse cities of the future on Solana with integrated DAO governance',
+            marketCap: 112300,
+            image: '/images/futurecity.png',
+          },
+          {
+            id: 'pixelworld',
+            name: 'Pixel World',
+            symbol: 'PIXL',
+            description: 'Retro-style pixel art and gaming platform with play-to-earn mechanics on Solana',
+            marketCap: 83600,
+            image: '/images/pixelworld.png',
+          },
+          {
+            id: 'solarmoon',
+            name: 'Solar Moon',
+            symbol: 'SMOON',
+            description: 'Bringing celestial tokenomics to Solana with reflection rewards and automatic liquidity generation',
+            marketCap: 47900,
+            image: '/images/solarmoon.png',
+          },
+          {
+            id: 'cosmicgem',
+            name: 'Cosmic Gem',
+            symbol: 'CSGEM',
+            description: 'Rare and valuable token with limited supply and deflationary mechanisms to increase scarcity',
+            marketCap: 58200,
+            image: '/images/cosmicgem.png',
+          },
+          {
+            id: 'shibasolana',
+            name: 'Shiba Solana',
+            symbol: 'SHIBSOL',
+            description: 'The Shiba Inu of Solana bringing dog-themed meme power to the fastest blockchain',
+            marketCap: 143500,
+            image: '/images/shibasolana.png',
+          },
+          {
+            id: 'samoyed',
+            name: 'Samoyed',
+            symbol: 'SAMO',
+            description: 'The friendliest and fluffiest dog on Solana with a mission to welcome newcomers to the ecosystem',
+            marketCap: 167200,
+            image: '/images/samoyed.png',
+          },
+          {
+            id: 'spacerocket',
+            name: 'Space Rocket',
+            symbol: 'ROCKET',
+            description: 'Blasting off to the moon with innovative DeFi mechanisms and interstellar tokenomics',
+            marketCap: 72400,
+            image: '/images/spacerocket.png',
+          },
+          {
+            id: 'metaverse',
+            name: 'Meta Verse',
+            symbol: 'MVERSE',
+            description: 'Building the next generation of virtual reality experiences on Solana\'s high-performance blockchain',
+            marketCap: 126800,
+            image: '/images/metaverse.png',
+          },
+          {
+            id: 'cryptowarrior',
+            name: 'Crypto Warrior',
+            symbol: 'WARR',
+            description: 'Battle-tested token with gamified mechanics and tournament rewards for the crypto fighting community',
+            marketCap: 42100,
+            image: '/images/cryptowarrior.png',
+          },
+          {
+            id: 'solgames',
+            name: 'Solana Games',
+            symbol: 'SGAME',
+            description: 'The premier gaming platform on Solana with in-game assets and cross-game compatibility',
+            marketCap: 89700,
+            image: '/images/solgames.png',
+          },
+          {
+            id: 'defipower',
+            name: 'DeFi Power',
+            symbol: 'DPOW',
+            description: 'Empowering decentralized finance with advanced yield farming and liquidity solutions',
+            marketCap: 105600,
+            image: '/images/defipower.png',
+          },
+          {
+            id: 'solsea',
+            name: 'Solana Ocean',
+            symbol: 'SOLOCEAN',
+            description: 'Diving deep into DeFi liquidity with ocean-themed tokenomics and conservation initiatives',
+            marketCap: 63800,
+            image: '/images/solsea.png',
+          },
+          {
+            id: 'aitoken',
+            name: 'AI Token',
+            symbol: 'AIT',
+            description: 'Leveraging artificial intelligence for predictive analytics and optimized trading algorithms',
+            marketCap: 118900,
+            image: '/images/aitoken.png',
+          },
+          {
+            id: 'farmtoken',
+            name: 'Farm Token',
+            symbol: 'FARM',
+            description: 'Sustainable yield farming with real-world agricultural connections and community-owned farms',
+            marketCap: 51300,
+            image: '/images/farmtoken.png',
+          },
+          {
+            id: 'solmars',
+            name: 'Solana Mars',
+            symbol: 'SMARS',
+            description: 'The first Mars colony token on Solana with plans for interplanetary blockchain expansion',
+            marketCap: 87500,
+            image: '/images/solmars.png',
+          },
+          {
+            id: 'cybercity',
+            name: 'Cyber City',
+            symbol: 'CYBER',
+            description: 'Futuristic cyberpunk-themed token with integrated NFT marketplace and virtual reality districts',
+            marketCap: 79200,
+            image: '/images/cybercity.png',
+          },
+          {
+            id: 'dragonfire',
+            name: 'Dragon Fire',
+            symbol: 'DFIRE',
+            description: 'Mythical token with burn mechanics that increase scarcity with every transaction',
+            marketCap: 56700,
+            image: '/images/dragonfire.png',
+          },
+          {
+            id: 'solarwind',
+            name: 'Solar Wind',
+            symbol: 'SWIND',
+            description: 'Renewable energy-focused token with carbon offset initiatives and green mining incentives',
+            marketCap: 69300,
+            image: '/images/solarwind.png',
+          },
+          {
+            id: 'cryptogold',
+            name: 'Crypto Gold',
+            symbol: 'CGOLD',
+            description: 'Digital gold standard with fixed supply and stability mechanisms to preserve value',
+            marketCap: 132400,
+            image: '/images/cryptogold.png',
+          },
+          {
+            id: 'solanagems',
+            name: 'Solana Gems',
+            symbol: 'SGEMS',
+            description: 'Collection of rare digital gems with unique properties and collectible value on the blockchain',
+            marketCap: 48600,
+            image: '/images/solanagems.png',
+          },
+          {
+            id: 'ninjawarrior',
+            name: 'Ninja Warrior',
+            symbol: 'NINJA',
+            description: 'Stealthy token with rapid transactions and privacy features for the security-conscious trader',
+            marketCap: 71800,
+            image: '/images/ninjawarrior.png',
+          },
+          {
+            id: 'musicnft',
+            name: 'Music NFT',
+            symbol: 'MNFT',
+            description: 'Revolutionizing the music industry with artist-owned streaming, royalties and exclusive content',
+            marketCap: 94500,
+            image: '/images/musicnft.png',
+          },
+          {
+            id: 'cryptosport',
+            name: 'Crypto Sport',
+            symbol: 'CSPORT',
+            description: 'Bringing sports betting and fantasy leagues to the blockchain with transparent odds and instant payouts',
+            marketCap: 82100,
+            image: '/images/cryptosport.png',
+          },
+          {
+            id: 'magicspell',
+            name: 'Magic Spell',
+            symbol: 'SPELL',
+            description: 'Enchanted token with magical properties and community governance for feature development',
+            marketCap: 59800,
+            image: '/images/magicspell.png',
+          }
         ]);
         setLoading(false);
       }, 1000);
@@ -295,6 +569,15 @@ const TrendingPage = () => {
     // Create URL with parameters to pre-fill the form
     router.push(`/?tokenName=${encodeURIComponent(token.name)}&tokenSymbol=${encodeURIComponent(token.symbol)}&tokenDescription=${encodeURIComponent(token.description)}`);
   };
+
+  // Calculate pagination
+  const indexOfLastToken = currentPage * tokensPerPage;
+  const indexOfFirstToken = indexOfLastToken - tokensPerPage;
+  const currentTokens = tokens.slice(indexOfFirstToken, indexOfLastToken);
+  const totalPages = Math.ceil(tokens.length / tokensPerPage);
+
+  // Change page
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
     <PageContainer>
@@ -325,7 +608,7 @@ const TrendingPage = () => {
           {loading ? (
             <LoadingContainer>Loading trending tokens...</LoadingContainer>
           ) : (
-            tokens.map((token) => (
+            currentTokens.map((token) => (
               <TokenCard key={token.id}>
                 <TokenInfo>
                   <TokenIcon>
@@ -359,6 +642,20 @@ const TrendingPage = () => {
             ))
           )}
         </TokenGrid>
+
+        {!loading && (
+          <PaginationContainer>
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <PaginationButton
+                key={index}
+                onClick={() => paginate(index + 1)}
+                active={currentPage === index + 1}
+              >
+                {index + 1}
+              </PaginationButton>
+            ))}
+          </PaginationContainer>
+        )}
       </MainContent>
 
       <Footer />
