@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import Navbar from '@/components/Navbar';
 import Banner from '@/components/Banner';
@@ -22,7 +22,11 @@ const ContentWrapper = styled.div`
   max-width: 100%;
   margin: 0 auto;
   padding: 0 20px;
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  overflow-x: hidden;
+  
+  @media (max-width: 768px) {
+    padding: 0; /* Remove padding on mobile */
+  }
 `;
 
 const NavigationBar = styled.div`
@@ -35,7 +39,7 @@ const NavigationBar = styled.div`
   flex-wrap: wrap;
   
   @media (max-width: 768px) {
-    padding: 10px;
+    border-radius: 0; /* Remove border radius on mobile */
   }
 `;
 
@@ -84,32 +88,105 @@ const ExternalLink = styled.a`
   }
 `;
 
-// Responsive iframe container with modern approach
-const IframeContainer = styled.div`
+// Seamless iframe container that expands with content
+const IframeContainer = styled.div<{ isLoaded: boolean }>`
   position: relative;
   overflow: hidden;
   width: 100%;
-  border-radius: 16px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   border: 1px solid var(--border-color);
-  height: calc(100vh - 200px);
-  min-height: 500px;
+  border-radius: 16px;
+  min-height: 800px; /* Starting height before load */
+  background-color: rgba(15, 23, 42, 0.7);
+  transition: height 0.3s ease;
+  
+  @media (max-width: 768px) {
+    border-radius: 0; /* Full width on mobile */
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
+  }
 `;
 
+// Responsive iframe that automatically adjusts height
 const ResponsiveIframe = styled.iframe`
-  position: absolute;
-  top: 0;
-  left: 0;
+  display: block;
   width: 100%;
   height: 100%;
   border: none;
-  transform: scale(1.0);
-  transform-origin: 0 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+`;
+
+// Loading state display
+const LoadingOverlay = styled.div<{ isLoading: boolean }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: ${props => props.isLoading ? 1 : 0};
+  transition: opacity 0.3s ease;
+  pointer-events: ${props => props.isLoading ? 'auto' : 'none'};
+  z-index: 10;
+`;
+
+const LoadingSpinner = styled.div`
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-left-color: var(--primary-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 `;
 
 const ManageLiquidityPage = () => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [iframeHeight, setIframeHeight] = useState('800px');
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle iframe load event
+  const handleIframeLoad = () => {
+    setIsLoaded(true);
+    
+    // Add event listener to update iframe height
+    const updateHeight = () => {
+      try {
+        const iframe = iframeRef.current;
+        if (iframe && iframe.contentWindow) {
+          // Get the height of the iframe content
+          const height = iframe.contentWindow.document.body.scrollHeight + 'px';
+          setIframeHeight(height);
+          if (containerRef.current) {
+            containerRef.current.style.height = height;
+          }
+        }
+      } catch (e) {
+        console.log("Could not access iframe content - it may be cross-origin restricted");
+      }
+    };
+
+    // Initial height update
+    updateHeight();
+    
+    // Set up interval to check for height changes
+    const interval = setInterval(updateHeight, 1000);
+    
+    // Cleanup
+    return () => clearInterval(interval);
+  };
+
   return (
     <PageContainer>
       <Head>
@@ -136,11 +213,17 @@ const ManageLiquidityPage = () => {
             </ExternalLink>
           </NavigationBar>
           
-          <IframeContainer>
+          <IframeContainer ref={containerRef} isLoaded={isLoaded} style={{ height: iframeHeight }}>
+            <LoadingOverlay isLoading={!isLoaded}>
+              <LoadingSpinner />
+            </LoadingOverlay>
             <ResponsiveIframe 
+              ref={iframeRef}
               src="https://raydium.io/portfolio/" 
               title="Manage Liquidity on Raydium" 
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              onLoad={handleIframeLoad}
+              scrolling="no"
             />
           </IframeContainer>
         </ContentWrapper>
