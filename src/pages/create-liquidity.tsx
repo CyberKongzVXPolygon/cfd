@@ -13,8 +13,9 @@ const PageContainer = styled.div`
 
 const MainContent = styled.div`
   flex: 1;
-  padding: 20px 0 40px;
+  padding: 20px 0 0;
   width: 100%;
+  overflow: hidden; /* Prevent double scrollbars */
 `;
 
 const ContentWrapper = styled.div`
@@ -22,7 +23,6 @@ const ContentWrapper = styled.div`
   max-width: 100%;
   margin: 0 auto;
   padding: 0 20px;
-  overflow-x: hidden;
   
   @media (max-width: 768px) {
     padding: 0; /* Remove padding on mobile */
@@ -88,43 +88,15 @@ const ExternalLink = styled.a`
   }
 `;
 
-// Seamless iframe container that expands with content
-const IframeContainer = styled.div<{ isLoaded: boolean }>`
+// Full-height iframe container with no scrollbar
+const IframeWrapper = styled.div`
   position: relative;
-  overflow: visible; /* Allow popups to extend beyond container */
   width: 100%;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  min-height: 800px; /* Starting height before load */
-  background-color: rgba(15, 23, 42, 0.7);
-  transition: height 0.3s ease;
+  height: calc(100vh - 180px); /* Full viewport height minus header */
+  margin-bottom: 0;
   
   @media (max-width: 768px) {
-    border-radius: 0; /* Full width on mobile */
-    border-left: none;
-    border-right: none;
-    box-shadow: none;
-    overflow: visible; /* Ensure popups can be seen and interacted with */
-    min-height: 900px; /* Increase minimum height for mobile */
-  }
-`;
-
-// Responsive iframe that automatically adjusts height and scales to 90% on mobile
-const ResponsiveIframe = styled.iframe`
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: none;
-  overflow: visible; /* Change to visible to allow popups to extend beyond iframe */
-  position: absolute;
-  top: 0;
-  left: 0;
-  
-  @media (max-width: 768px) {
-    transform: scale(0.9); /* Scale to 90% on mobile */
-    transform-origin: 0 0;
-    width: 111.11%; /* Compensate for scaling to maintain full width (100% ÷ 0.9 = 111.11%) */
+    height: calc(100vh - 140px);
   }
 `;
 
@@ -158,101 +130,78 @@ const LoadingSpinner = styled.div`
   }
 `;
 
+// The iframe container that looks like part of our site
+const IframeContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  overflow: hidden; /* Hide iframe scrollbar */
+  background-color: rgba(15, 23, 42, 0.7);
+  
+  @media (max-width: 768px) {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
+  }
+`;
+
+// The iframe itself - full height and width
+const StyledIframe = styled.iframe`
+  width: 100%;
+  height: 100%;
+  border: none;
+`;
+
 const CreateLiquidityPage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [iframeHeight, setIframeHeight] = useState('800px');
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Add custom CSS to handle wallet popups
+  // Apply custom CSS for better iframe integration
   useEffect(() => {
+    // Remove footer when iframe is loaded to give more space
+    const footer = document.querySelector('footer');
+    if (footer) {
+      footer.style.display = 'none';
+    }
+
     // Create a style element to inject custom CSS
     const styleElement = document.createElement('style');
     styleElement.textContent = `
-      /* Override any z-index issues that might prevent interaction */
-      .wallet-adapter-modal {
-        z-index: 9999 !important;
-      }
-      
-      /* Make sure Raydium wallet selector is scrollable on mobile */
-      iframe {
-        pointer-events: auto !important;
-      }
-      
+      /* Make sure the body doesn't have its own scrollbar */
       body {
-        overflow: auto !important;
+        overflow: hidden !important;
+      }
+      
+      /* Force high z-index for wallet dialogs */
+      .wallet-adapter-modal {
+        z-index: 999999 !important;
+      }
+      
+      /* Fix any iframe scrolling issues */
+      iframe {
+        -webkit-overflow-scrolling: touch !important;
+      }
+      
+      /* Remove any potential page breaks in design */
+      #__next {
+        height: 100vh;
+        overflow: hidden;
       }
     `;
     document.head.appendChild(styleElement);
     
-    // Cleanup
     return () => {
+      // Restore footer visibility
+      if (footer) {
+        footer.style.display = '';
+      }
+      // Remove custom styles
       document.head.removeChild(styleElement);
     };
   }, []);
-
-  // Handle iframe load event with improved height management
-  const handleIframeLoad = () => {
-    setIsLoaded(true);
-    
-    // Function to check if we can access the iframe content
-    const canAccessIframe = () => {
-      try {
-        // Try to access the iframe contentWindow
-        return !!iframeRef.current?.contentWindow?.document;
-      } catch (e) {
-        return false;
-      }
-    };
-    
-    // Update height based on iframe content or set a fixed height
-    const updateHeight = () => {
-      // Get the iframe element
-      const iframe = iframeRef.current;
-      if (!iframe) return;
-      
-      // Try to get the content height if we can access the iframe
-      if (canAccessIframe()) {
-        try {
-          const height = iframe.contentWindow?.document.body.scrollHeight + 'px';
-          setIframeHeight(height);
-          if (containerRef.current) {
-            containerRef.current.style.height = height;
-          }
-        } catch (e) {
-          console.log("Could not access iframe content height");
-          setDefaultHeight();
-        }
-      } else {
-        // If we can't access the iframe content, set a larger default height
-        setDefaultHeight();
-      }
-    };
-    
-    // Set a default height based on screen size
-    const setDefaultHeight = () => {
-      const height = window.innerWidth <= 768 ? '1500px' : '1000px';
-      setIframeHeight(height);
-      if (containerRef.current) {
-        containerRef.current.style.height = height;
-      }
-    };
-
-    // Initial height update
-    updateHeight();
-    
-    // Update height when window is resized
-    window.addEventListener('resize', updateHeight);
-    
-    // Set up interval to check for height changes
-    const interval = setInterval(updateHeight, 1000);
-    
-    // Cleanup
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('resize', updateHeight);
-    };
-  };
 
   return (
     <PageContainer>
@@ -280,23 +229,23 @@ const CreateLiquidityPage = () => {
             </ExternalLink>
           </NavigationBar>
           
-          <IframeContainer ref={containerRef} isLoaded={isLoaded} style={{ height: iframeHeight }}>
+          <IframeWrapper>
             <LoadingOverlay isLoading={!isLoaded}>
               <LoadingSpinner />
             </LoadingOverlay>
-            <ResponsiveIframe 
-              ref={iframeRef}
-              src="https://raydium.io/liquidity/create-pool/" 
-              title="Create Liquidity on Raydium" 
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin"
-              onLoad={handleIframeLoad}
-              allow="fullscreen"
-            />
-          </IframeContainer>
+            <IframeContainer>
+              <StyledIframe
+                ref={iframeRef}
+                src="https://raydium.io/liquidity/create-pool/" 
+                title="Create Liquidity on Raydium"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                onLoad={() => setIsLoaded(true)}
+                allowFullScreen
+              />
+            </IframeContainer>
+          </IframeWrapper>
         </ContentWrapper>
       </MainContent>
-
-      <Footer />
     </PageContainer>
   );
 };
