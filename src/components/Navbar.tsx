@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 const NavbarContainer = styled.div`
   display: flex;
@@ -27,6 +29,7 @@ const Logo = styled.div`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -0.5px;
+  cursor: pointer;
 
   @media (max-width: 768px) {
     font-size: 24px;
@@ -43,8 +46,8 @@ const NavLinks = styled.div`
   }
 `;
 
-const NavLink = styled.a`
-  color: var(--text-light);
+const NavLink = styled.a<{ active?: boolean }>`
+  color: ${props => props.active ? 'var(--text-white)' : 'var(--text-light)'};
   text-decoration: none;
   font-size: 16px;
   transition: color 0.3s ease;
@@ -59,7 +62,7 @@ const NavLink = styled.a`
   &::after {
     content: '';
     position: absolute;
-    width: 0;
+    width: ${props => props.active ? '100%' : '0'};
     height: 2px;
     bottom: 0;
     left: 0;
@@ -121,7 +124,7 @@ const MobileMenuClose = styled.button`
   z-index: 102;
 `;
 
-const MobileNavLink = styled.a`
+const MobileNavLink = styled.a<{ active?: boolean }>`
   color: var(--text-white);
   text-decoration: none;
   font-size: 20px;
@@ -131,6 +134,7 @@ const MobileNavLink = styled.a`
   width: 100%;
   text-align: center;
   border-bottom: 1px solid var(--border-color);
+  background: ${props => props.active ? 'rgba(74, 142, 255, 0.1)' : 'transparent'};
 
   &:last-child {
     border-bottom: none;
@@ -213,6 +217,7 @@ const BannerActions = styled.div`
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showPhantomBanner, setShowPhantomBanner] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // Check if on mobile device
@@ -244,6 +249,10 @@ const Navbar = () => {
     }
   };
 
+  const isActive = (path: string) => {
+    return router.pathname === path;
+  };
+
   return (
     <>
       {showPhantomBanner && (
@@ -264,10 +273,14 @@ const Navbar = () => {
 
       <NavbarContainer style={{ marginTop: showPhantomBanner ? '60px' : '0' }}>
         <MenuIcon onClick={() => setIsMenuOpen(true)}>☰</MenuIcon>
-        <Logo>CoinFast</Logo>
+        <Logo onClick={() => router.push('/')}>CoinFast</Logo>
         <NavLinks>
-          <NavLink href="#">Create Token</NavLink>
-          <NavLink href="#">Trending Tokens <NewBadge>SOON</NewBadge></NavLink>
+          <Link href="/" passHref legacyBehavior>
+            <NavLink active={isActive('/')}>Create Token</NavLink>
+          </Link>
+          <Link href="/trending" passHref legacyBehavior>
+            <NavLink active={isActive('/trending')}>Trending Tokens <NewBadge>NEW</NewBadge></NavLink>
+          </Link>
           <NavLink href="https://raydium.io/liquidity/create-pool/" target="_blank">Create Liquidity</NavLink>
           <NavLink href="https://raydium.io/portfolio/" target="_blank">Manage Liquidity</NavLink>
         </NavLinks>
@@ -278,8 +291,16 @@ const Navbar = () => {
 
       <MobileMenu isOpen={isMenuOpen}>
         <MobileMenuClose onClick={() => setIsMenuOpen(false)}>✕</MobileMenuClose>
-        <MobileNavLink href="#" onClick={() => setIsMenuOpen(false)}>Create Token</MobileNavLink>
-        <MobileNavLink href="#" onClick={() => setIsMenuOpen(false)}>Trending Tokens <NewBadge>SOON</NewBadge></MobileNavLink>
+        <Link href="/" passHref legacyBehavior>
+          <MobileNavLink active={isActive('/')} onClick={() => setIsMenuOpen(false)}>
+            Create Token
+          </MobileNavLink>
+        </Link>
+        <Link href="/trending" passHref legacyBehavior>
+          <MobileNavLink active={isActive('/trending')} onClick={() => setIsMenuOpen(false)}>
+            Trending Tokens <NewBadge>NEW</NewBadge>
+          </MobileNavLink>
+        </Link>
         <MobileNavLink href="https://raydium.io/liquidity/create-pool/" target="_blank" onClick={() => setIsMenuOpen(false)}>Create Liquidity</MobileNavLink>
         <MobileNavLink href="https://raydium.io/portfolio/" target="_blank" onClick={() => setIsMenuOpen(false)}>Manage Liquidity</MobileNavLink>
         <MobileWalletButtonWrapper>

