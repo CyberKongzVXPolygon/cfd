@@ -90,11 +90,13 @@ const TokenInfo = styled.div`
 `;
 
 const TokenIcon = styled.div`
+  position: relative;
   width: 60px;
   height: 60px;
   border-radius: 50%;
   overflow: hidden;
   background-color: rgba(30, 40, 60, 0.5);
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -102,10 +104,20 @@ const TokenIcon = styled.div`
   font-weight: bold;
   color: var(--text-white);
   
+  &::after {
+    content: "";
+    display: block;
+    padding-bottom: 100%; /* Creates a responsive square */
+  }
+  
   img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* This prevents distortion */
+    object-position: center; /* This centers the image */
   }
 `;
 
@@ -266,6 +278,7 @@ const PaginationContainer = styled.div`
   justify-content: center;
   margin-top: 40px;
   gap: 8px;
+  flex-wrap: wrap;
 `;
 
 const PaginationButton = styled.button<{ active?: boolean }>`
@@ -615,7 +628,7 @@ const TrendingPage = () => {
                     {token.image ? (
                       <img src={token.image} alt={token.name} />
                     ) : (
-                      token.symbol.substring(0, 2)
+                      <span>{token.symbol.substring(0, 2)}</span>
                     )}
                   </TokenIcon>
                   <TokenDetails>
