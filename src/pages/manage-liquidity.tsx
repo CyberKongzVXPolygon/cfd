@@ -14,22 +14,15 @@ const PageContainer = styled.div`
 const MainContent = styled.div`
   flex: 1;
   padding: 20px 0 40px;
+  width: 100%;
 `;
 
-const EmbedContainer = styled.div`
-  position: relative;
-  height: calc(100vh - 180px);
+const ContentWrapper = styled.div`
   width: 100%;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border-color);
-`;
-
-const StyledIframe = styled.iframe`
-  width: 100%;
-  height: 100%;
-  border: none;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 `;
 
 const NavigationBar = styled.div`
@@ -39,6 +32,11 @@ const NavigationBar = styled.div`
   margin-bottom: 20px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
 `;
 
 const NavText = styled.div`
@@ -67,6 +65,7 @@ const ExternalLink = styled.a`
   border-radius: 8px;
   border: 1px solid var(--border-color);
   transition: all 0.2s ease;
+  white-space: nowrap;
   
   &:hover {
     background-color: rgba(30, 40, 60, 0.5);
@@ -77,23 +76,47 @@ const ExternalLink = styled.a`
     width: 16px;
     height: 16px;
   }
+  
+  @media (max-width: 768px) {
+    margin-top: 8px;
+    width: 100%;
+    justify-content: center;
+  }
 `;
 
-const ContentWrapper = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+// Responsive iframe container with modern approach
+const IframeContainer = styled.div`
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  height: calc(100vh - 200px);
+  min-height: 500px;
+`;
+
+const ResponsiveIframe = styled.iframe`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  transform: scale(1.0);
+  transform-origin: 0 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 `;
 
 const ManageLiquidityPage = () => {
-  const [loading, setLoading] = useState(true);
-
   return (
     <PageContainer>
       <Head>
         <title>Manage Liquidity | CoinFast</title>
         <meta name="description" content="Manage your liquidity pools and token positions on Solana." />
         <link rel="icon" href="/favicon.ico" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
       </Head>
 
       <Banner />
@@ -113,14 +136,13 @@ const ManageLiquidityPage = () => {
             </ExternalLink>
           </NavigationBar>
           
-          <EmbedContainer>
-            <StyledIframe 
+          <IframeContainer>
+            <ResponsiveIframe 
               src="https://raydium.io/portfolio/" 
               title="Manage Liquidity on Raydium" 
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-              onLoad={() => setLoading(false)}
             />
-          </EmbedContainer>
+          </IframeContainer>
         </ContentWrapper>
       </MainContent>
 
